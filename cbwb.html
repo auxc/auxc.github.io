@@ -57,14 +57,14 @@ li {
 <title>Text File Viewer</title>
 </head>
 <body onload="test()">
-<center><input type="text" oninput="updateResults()" id = "searchInput" placeholder=" 🔍 type to begin"></center>
+<center><input type="text" oninput="updateResults()" id = "searchInput" placeholder=" type to begin"></center>
 <hr id="divider" />
 <ul id='results'>
 <li><b>yo</b></br>buh</li>
 </ul>
 
 <div id="footer">
-<small id = "output">v0.0 • sites handpicked by auxc</small>
+<small id = "output">v0.0 - sites handpicked by auxc</small>
 </div>
 
 <script>
@@ -89,7 +89,7 @@ fetch(url)
 
 function done() {
   searchIndex = storedText.split('\n');
-  document.getElementById('output').textContent += " • index loaded successfully"
+  document.getElementById('output').textContent += " - index loaded successfully"
 }
 
 function updateResults() {
