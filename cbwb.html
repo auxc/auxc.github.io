@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  font-family: Roboto, sans-serif;
+}
+
+li:nth-child(even) { background: rgb(0 0 0 / 0.01)}
+
+li {
+  margin-bottom: 10px;
+}
+
+#results {
+  list-style-type:none;
+  padding-left: 0;
+  margin-left: 1%;
+  margin-right: 1%;
+  margin-bottom: 30px; 
+}
+
+#searchInput {
+  width: 97%;
+  border-radius: 5px;
+  border: 1px solid rgb(0 0 0 / 0.5);
+  padding: 5px; 
+  box-shadow: 0px 2px 5px rgb(0 0 0 / 0.1);
+}
+
+#divider {
+  border: none;
+  height: 0.5px;
+  background-color: rgb(0 0 0 / 0.5);
+  box-shadow: 0 2.5px 5px rgb(0 0 0 / 0.2);
+}
+
+.smallSpace {
+    height: 25px;
+}
+
+#footer {
+   position: fixed;
+   bottom: 0;
+   width: 100%;
+   height: 20px;
+   margin: auto 0;
+   background-color: rgb(0 0 0 / 0.01);
+   color: rgb(0 0 0 / 0.7);
+   text-align: center;
+   font-size: medium;
+   border-top: 1px solid rgb(0 0 0 / 0.2);
+}
+
+</style>
+<title>Text File Viewer</title>
+</head>
+<body onload="test()">
+<center><input type="text" oninput="updateResults()" id = "searchInput" placeholder=" 🔍 type to begin"></center>
+<hr id="divider" />
+<ul id='results'>
+<li><b>yo</b></br>buh</li>
+</ul>
+
+<div id="footer">
+<small id = "output">v0.0 • sites handpicked by auxc</small>
+</div>
+
+<script>
+var url = 'https://raw.githubusercontent.com/raysan5/raylib/master/README.md';
+var storedText;
+var searchIndex;
+
+var splitWordsExp = /\(([^)]+)\)/g;
+
+function test(){
+storedText = "(https://google.com) (Google) (Popular search engine.) (Boring) (Google gogl search alphabet)\n(https://reddit.com) (Reddit) (Terrible online forum.) (Boring) (worldnews r technology popular)";
+
+var matches = storedText.match(splitWordsExp);
+
+matches.forEach((element) => console.log(element));
+
+done();
+return;
+/*
+fetch(url)
+  .then(function(response) {
+    response.text().then(function(text) {
+      storedText = text;
+      done();
+    });
+  });*/
+}
+
+function done() {
+  searchIndex = storedText.split('\n');
+  document.getElementById('output').textContent += " • index loaded successfully"
+}
+
+function updateResults() {
+  var inputStr = document.getElementById('searchInput').value;
+
+  var filterStrings = inputStr.split(' ');
+  var filterExp = new RegExp(filterStrings.join( "|" ), "i");
+
+  var ul = document.getElementById("results");
+
+  while(ul.firstChild){
+    ul.removeChild(ul.firstChild);
+  }
+
+  searchIndex.forEach((element) => {
+    if(filterExp.test(element)){
+      var li = document.createElement("li");
+      var htmlResult = getResultString(element);
+      li.insertAdjacentHTML("beforeend", htmlResult);
+      ul.appendChild(li);
+    }
+  });
+}
+
+function getResultString(rawResult){
+  var URL = 0;
+  var NAME = 1;
+  var DESCRIPTION = 2;
+  var CATEGORY = 3;
+  var KEYWORDS = 4;
+  var HEADER_WORD_COUNT = 5;
+
+  var url, name, description;
+  var resultWords = rawResult.match(splitWordsExp);
+
+  for (var i = 0; i < HEADER_WORD_COUNT; i++) { 
+    var word = stripParentheses(resultWords[i]);
+    
+    switch (i) {
+      case URL:
+        url = word;
+        break;
+      case NAME:
+        name = word;
+        break;
+      case DESCRIPTION:
+        description = word;
+        break;
+      case CATEGORY:
+        break;
+      case KEYWORDS:
+        break;
+    }
+  }
+  
+  var result = `<b><a href='${url}'>${name}</a></b></br><small>${url}</small></br class='smallSpace'/>${description}`;
+  return result;
+}
+
+function stripParentheses(str){
+  str = str.replaceAll('(','');
+  str = str.replaceAll(')','');
+  return str;
+}
+</script>
+</body>
+</html>
