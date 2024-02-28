@@ -68,29 +68,23 @@ li {
 </div>
 
 <script>
-var url = 'https://raw.githubusercontent.com/raysan5/raylib/master/README.md';
+var url = 'https://raw.githubusercontent.com/auxc/cbwb/main/searchdb.txt';
 var storedText;
 var searchIndex;
 
 var splitWordsExp = /\(([^)]+)\)/g;
 
 function test(){
-storedText = "(https://google.com) (Google) (Popular search engine.) (Boring) (Google gogl search alphabet)\n(https://reddit.com) (Reddit) (Terrible online forum.) (Boring) (worldnews r technology popular)";
+//var matches = storedText.match(splitWordsExp);
+//matches.forEach((element) => console.log(element));
 
-var matches = storedText.match(splitWordsExp);
-
-matches.forEach((element) => console.log(element));
-
-done();
-return;
-/*
 fetch(url)
   .then(function(response) {
     response.text().then(function(text) {
       storedText = text;
       done();
     });
-  });*/
+  });
 }
 
 function done() {
