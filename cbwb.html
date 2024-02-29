@@ -122,7 +122,7 @@ function getResultString(rawResult){
   var KEYWORDS = 4;
   var HEADER_WORD_COUNT = 5;
 
-  var url, name, description;
+  var url, name, description, category;
   var resultWords = rawResult.match(splitWordsExp);
 
   for (var i = 0; i < HEADER_WORD_COUNT; i++) { 
@@ -139,13 +139,14 @@ function getResultString(rawResult){
         description = word;
         break;
       case CATEGORY:
+        category = word;
         break;
       case KEYWORDS:
         break;
     }
   }
   
-  var result = `<b><a href='${url}'>${name}</a></b></br><small>${url}</small></br class='smallSpace'/>${description}`;
+  var result = `<b><a href='${url}'>${name}</a></b></br><small>${url}</small><sup>${category}</sup></br class='smallSpace'/>${description}`;
   return result;
 }
 
