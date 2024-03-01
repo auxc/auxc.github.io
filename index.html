@@ -7,10 +7,10 @@ body {
   font-family: Roboto, sans-serif;
 }
 
-li:nth-child(even) { background: rgb(0 0 0 / 0.01)}
+li:nth-child(even) { background: rgb(0 0 0 / 0.005)}
 
 li {
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 #results {
@@ -75,9 +75,6 @@ var searchIndex;
 var splitWordsExp = /\(([^)]+)\)/g;
 
 function test(){
-//var matches = storedText.match(splitWordsExp);
-//matches.forEach((element) => console.log(element));
-
 fetch(url)
   .then(function(response) {
     response.text().then(function(text) {
@@ -105,11 +102,13 @@ function updateResults() {
   }
 
   searchIndex.forEach((element) => {
-    if(filterExp.test(element)){
-      var wordedElement = rawResult.match(splitWordsExp);
+    if(!element)
+      return;
+
+    if(element && filterExp.test(element)){
       var htmlResult = getResultString(element);
 
-      if(htmlResult.length != 0)
+      if(htmlResult.length == 0)
         return;
       
       var li = document.createElement("li");
@@ -129,6 +128,9 @@ function getResultString(rawResult){
 
   var url, name, description, category;
   var resultWords = rawResult.match(splitWordsExp);
+
+  if(!resultWords)
+    return "";
  
   for (var i = 0; i < HEADER_WORD_COUNT; i++) { 
     var word = stripParentheses(resultWords[i]);
@@ -151,7 +153,7 @@ function getResultString(rawResult){
     }
   }
   
-  var result = `<b><a href='${url}'>${name}</a></b></br><small><sup><i>${category}</i> ${url}</sup></small></br class='smallSpace'/>${description}`;
+  var result = `<b><a href='${url}'>${name}</a></b></br><small><sup>${category} · ${url}</sup></small></br class='smallSpace'/>${description}`;
   return result;
 }
 
