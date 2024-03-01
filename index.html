@@ -106,13 +106,13 @@ function updateResults() {
 
   searchIndex.forEach((element) => {
     if(filterExp.test(element)){
-      var li = document.createElement("li");
       var wordedElement = rawResult.match(splitWordsExp);
       var htmlResult = getResultString(element);
 
-      if(htmlResult.length == 0)
-        continue;
+      if(htmlResult.length != 0)
+        return;
       
+      var li = document.createElement("li");
       li.insertAdjacentHTML("beforeend", htmlResult);
       ul.appendChild(li);
     }
