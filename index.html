@@ -73,6 +73,7 @@ var storedText;
 var searchIndex;
 
 var splitWordsExp = /\(([^)]+)\)/g;
+var tagExp =  /([^:\s]+):([^:\s]+)/g;
 
 function test(){
 fetch(url)
@@ -91,8 +92,27 @@ function done() {
 
 function updateResults() {
   var inputStr = document.getElementById('searchInput').value;
-
   var filterStrings = inputStr.split(' ');
+  var tags = new Array();
+
+  for(var i = 0; i < filterStrings.length; i++){
+    var next = filterStrings[i];
+
+    if(next[next.length-1] != ":")
+      continue;
+
+    filterStrings.splice(i, 1);
+    i--;
+
+    var strippedTag = next.replace(":", "");
+    tags.push(strippedTag);
+  }
+
+  var tagExp = new RegExp(tags.join( "|" ), "i");
+  
+  console.log(filterStrings);
+  console.log(tags);
+
   var filterExp = new RegExp(filterStrings.join( "|" ), "i");
 
   var ul = document.getElementById("results");
@@ -106,7 +126,7 @@ function updateResults() {
       return;
 
     if(element && filterExp.test(element)){
-      var htmlResult = getResultString(element);
+      var htmlResult = getResultString(element, tagExp);
 
       if(htmlResult.length == 0)
         return;
@@ -118,7 +138,7 @@ function updateResults() {
   });
 }
 
-function getResultString(rawResult){
+function getResultString(rawResult, tagExp){
   var URL = 0;
   var NAME = 1;
   var DESCRIPTION = 2;
@@ -131,7 +151,7 @@ function getResultString(rawResult){
 
   if(!resultWords)
     return "";
- 
+
   for (var i = 0; i < HEADER_WORD_COUNT; i++) { 
     var word = stripParentheses(resultWords[i]);
     
@@ -146,6 +166,9 @@ function getResultString(rawResult){
         description = word;
         break;
       case CATEGORY:
+        if(!tagExp.test(word))
+          return "";
+
         category = word;
         break;
       case KEYWORDS:
@@ -153,7 +176,7 @@ function getResultString(rawResult){
     }
   }
   
-  var result = `<b><a href='${url}'>${name}</a></b></br><small><sup>${category} · ${url}</sup></small></br class='smallSpace'/>${description}`;
+  var result = `<b><a href='${url}' onclick="resultOnClick(this)">${name}</a></b></br><small><sup>${category} · ${url}</sup></small></br class='smallSpace'/>${description}`;
   return result;
 }
 
@@ -161,6 +184,10 @@ function stripParentheses(str){
   str = str.replaceAll('(','');
   str = str.replaceAll(')','');
   return str;
+}
+
+function resultOnClick(arg){
+document.getElementById('searchInput').value = arg.getAttribute("href");
 }
 </script>
 </body>
