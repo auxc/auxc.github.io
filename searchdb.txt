@@ -6,3 +6,4 @@
 (https://godbolt.org/) (Godbolt) (Compiler explorer. "Edit code in C, C++, C#, F#, Rust, Go, D, Haskell, Swift, Pascal, ispc, Python, Java, or any of the other 30+ supported languages components, and see how that code looks after being compiled in real time.") (tool programming) (asm assembly intermediate result)
 (https://eleif.net/permutations.html) (Online permutations generator) (Quickly generate all possible orders of characters from a given word.) (tool) (scramble word permutate name variant)
 (https://nakka.com/soft/clcl/index_eng.html) (CLCL - clipboard caching utility) (Tiny windows tool that stores clipboard history. Paste from popup menu on Alt+C.) (tool downloadable) (copy paste ctrl)
+(https://www.voidtools.com/) (Everything - windows file search) (Lightning fast and powerful search window. "Locate files and folders by name instantly.") (tool downloadable) (index voidtools)
