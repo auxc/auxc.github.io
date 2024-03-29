@@ -57,7 +57,7 @@ li {
 <title>cobweb</title>
 </head>
 <body onload="test()">
-<center><input type="text" oninput="updateResults()" id = "searchInput" placeholder=" type to begin"></center>
+<center><input type="search" oninput="updateResults()" id = "searchInput" placeholder=" type to begin"></center>
 <hr id="divider" />
 <ul id='results'>
 <li><b>yo</b></br>buh</li>
@@ -88,10 +88,17 @@ fetch(url)
 function done() {
   searchIndex = storedText.split('\n');
   document.getElementById('output').textContent += " - index loaded successfully"
+  showAllTags();
 }
 
 function updateResults() {
   var inputStr = document.getElementById('searchInput').value;
+
+  if(inputStr.length == 0){
+    showAllTags();
+    return;
+  }
+  
   var filterStrings = inputStr.split(' ');
   var tags = new Array();
 
@@ -186,8 +193,67 @@ function stripParentheses(str){
   return str;
 }
 
+function showAllTags(){
+    var tagMap = new Map();
+  
+    searchIndex.forEach((element) => {
+      if(!element)
+        return;
+      
+      addTag(element, tagMap);
+    });
+
+	var sortedKeys = Array.from(tagMap.keys()).sort();
+
+    var tagHtml = "";
+	sortedKeys.forEach((key) => {
+		var value = tagMap.get(key);
+		tagHtml += getLinkHtml(`${key}:`,`${key}(${value.val})`) + " ";
+	});
+	
+	var ul = document.getElementById("results");
+
+	while(ul.firstChild){
+		ul.removeChild(ul.firstChild);
+	}
+
+    var li = document.createElement("li");
+    li.insertAdjacentHTML("beforeend", tagHtml);
+    ul.appendChild(li);
+}
+
+function addTag(element, tagMap){
+    var CATEGORY = 3; 
+    var allWords = element.match(splitWordsExp);
+	
+	if(!allWords)
+		return;
+	
+    var tagWord = stripParentheses(allWords[CATEGORY]);
+
+    if(tagWord.length == 0)
+      return;
+	  
+	var tags = tagWord.split(" ");
+
+	tags.forEach((tag) => {
+      if(!tag)
+        return;
+      
+      if(tagMap.has(tag))
+        tagMap.get(tag).val++;
+      else
+        tagMap.set(tag, {val: 1})
+    });
+}
+
+function getLinkHtml(url, text){
+    return `<a href='${url}' onclick="resultOnClick(this)">${text}</a>`;
+}
+
 function resultOnClick(arg){
-document.getElementById('searchInput').value = arg.getAttribute("href");
+    document.getElementById('searchInput').value = arg.getAttribute("href");
+	updateResults();
 }
 </script>
 </body>
