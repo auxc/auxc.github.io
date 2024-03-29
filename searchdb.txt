@@ -1,11 +1,4 @@
-//landing page
-
-(#testing some keywords) (Welcome!) (Some intro text etc etc) (hello) (landing home welcome help)
-
-//Gamedev tech books
-
 (https://artint.info/index.html) (Foundations of Computational Agents) (Artificial Intelligence: Foundations of Computational Agents, 3rd edition by David L. Poole and Alan K. Mackworth, Cambridge University Press 2023, is a book about the science of artificial intelligence. It presents artificial intelligence as the study of the design of intelligent computational agents.) (book) (bfs graph goal decision heuristic cost gamedev)
 (https://gameprogrammingpatterns.com/contents.html) (Game Programming Patterns) (Game Programming Patterns is a collection of patterns I found in games that make code cleaner, easier to understand, and faster.) (book) (gamedev space partitioning algorithm main loop event)
-(https://www.jacksondunstan.com/articles/5530) (C++ For C# Developers) (Programming book by Jackson Dunstan. "Outside of Unity, C# is rarely used as a game programming language. C++ is used heavily in Unreal, Cryengine, Lumberyard, and almost all proprietary game studio engines. This series is for Unity game programmers who know C# and want to broaden their skills so they can effectively write code for other engines, or even write C++ scripts for Unity.") (book cpp) (gamedev cpp intro cheatsheet learn)(https://graphtoy.com/) (Graphtoy) (Easy graphing of functions in the browser.) (tool) (graph math curve web sine preview)
+(https://www.jacksondunstan.com/articles/5530) (C++ For C# Developers) (Programming book by Jackson Dunstan. "Outside of Unity, C# is rarely used as a game programming language. C++ is used heavily in Unreal, Cryengine, Lumberyard, and almost all proprietary game studio engines. This series is for Unity game programmers who know C# and want to broaden their skills so they can effectively write code for other engines, or even write C++ scripts for Unity.") (book cpp) (gamedev cpp intro cheatsheet learn)
 (https://graphtoy.com/) (Graphtoy) (Easy graphing of functions in the browser.) (tool) (graph math curve web sine preview)
-(https://www.relevant_page.com) (Descriptive but concise) (Make this as long as needed. The better the description the easier it is to accurately score a page when searching. Paragraph support and auto-shortening with a button to expand is coming Soon™.) (info how-to etc) (arbitrary invisible words to help search)
