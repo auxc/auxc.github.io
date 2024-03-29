@@ -7,4 +7,4 @@
 (https://eleif.net/permutations.html) (Online permutations generator) (Quickly generate all possible orders of characters from a given word.) (tool) (scramble word permutate name variant)
 (https://nakka.com/soft/clcl/index_eng.html) (CLCL - clipboard caching utility) (Tiny windows tool that stores clipboard history. Paste from popup menu on Alt+C.) (tool downloadable) (copy paste ctrl)
 (https://www.voidtools.com/) (Everything - windows file search) (Lightning fast and powerful search window. "Locate files and folders by name instantly.") (tool downloadable) (index voidtools)
-(https://www.redblobgames.com/articles/probability/damage-rolls.html) (Probability and) (Interactive explanation of D&D-style dice rolls and their distributions.) (gamedev math programming tool) (plus variance random visual sample)
+(https://www.redblobgames.com/articles/probability/damage-rolls.html) (Probability and Games - Damage Rolls) (Interactive explanation of D&D-style dice rolls and their distributions.) (gamedev math programming tool) (plus variance random visual sample)
