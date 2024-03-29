@@ -53,6 +53,28 @@ li {
    border-top: 1px solid rgb(0 0 0 / 0.2);
 }
 
+.loader {
+  border: 6px double #f3f3f3;
+  border-top: 6px solid rgb(0 0 0 / 0.66);
+  border-radius: 50%;
+  width: 33px;
+  height: 33px;
+  animation: spin 0.33s linear infinite;
+  position: absolute;
+  top:0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  
+  margin: auto;
+  z-index: -1;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 </style>
 <title>cobweb</title>
 </head>
@@ -60,7 +82,7 @@ li {
 <center><input type="search" oninput="updateResults()" id = "searchInput" placeholder=" type to begin"></center>
 <hr id="divider" />
 <ul id='results'>
-<li><b>yo</b></br>buh</li>
+<div id="init_loader" class="loader"></div>
 </ul>
 
 <div id="footer">
