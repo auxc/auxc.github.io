@@ -148,10 +148,12 @@ function updateResults() {
     tags.push(strippedTag);
   }
 
-  var tagExpPattern = '(?=.*\\b' + tags.join('\\b)(?=.*\\b') + '\\b)';
+  var tagExpPattern = '(?=.*(?:^|\\s)' + tags.map(tag => tag.replace(/#/g, '\\#')).join('(?:\\s|$))(?=.*(?:^|\\s)') + '(?:\\s|$))';
   var tagExp = new RegExp(tagExpPattern);
+  var anyTags = tags.length > 0;
   
-  if(filterStrings.length == 0)
+  //hack to dump all matching entries if all search words were stripped as tags
+  if(filterStrings.length == 0) 
 	filterStrings = ['('];
 
   var searchSansTags = filterStrings.join(" ");
@@ -233,8 +235,6 @@ function updateResults() {
 		return x.score > y.score ? -1 : 0
   });
   
-  console.log(scoredArr);
-  
   var ul = document.getElementById("results");
 
   while(ul.firstChild){
@@ -248,8 +248,9 @@ function updateResults() {
 	var words = scoredMatch.line.match(splitWordsExp);
 	var category = stripParentheses(words[CATEGORY], ['(', ')']);
 	
-	if(!tagExp.test(category))
+	if(anyTags && !tagExp.test(category))
 		return;
+
 
     var htmlResult = getResultString(scoredMatch.line);
 
@@ -490,12 +491,13 @@ function addTag(element, tagMap){
 }
 
 function getLinkHtml(url, text){
-    return `<a href='${url}' onclick="resultOnClick(this)">${text}</a>`;
+    return `<a href='${url}' onclick="return resultOnClick(this)">${text}</a>`;
 }
 
 function resultOnClick(arg){
     document.getElementById('searchInput').value = arg.getAttribute("href");
 	updateResults();
+	return false;
 }
 </script>
 </body>
