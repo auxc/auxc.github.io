@@ -40,6 +40,10 @@ li {
     height: 25px;
 }
 
+#output {
+	font-family:monospace;
+}
+
 #footer {
    position: fixed;
    bottom: 0;
@@ -86,7 +90,7 @@ li {
 </ul>
 
 <div id="footer">
-<small id = "output">v0.0 - sites handpicked by auxc</small>
+<small id = "output">v0.1 🕸️ cobweb · curios found by auxc & friends</small>
 </div>
 
 <script>
@@ -96,6 +100,13 @@ var searchIndex;
 
 var splitWordsExp = /\(([^)]+)\)/g;
 var tagExp =  /([^:\s]+):([^:\s]+)/g;
+
+var URL = 0;
+var NAME = 1;
+var DESCRIPTION = 2;
+var CATEGORY = 3;
+var KEYWORDS = 4;
+var HEADER_WORD_COUNT = 5;
 
 function test(){
 fetch(url)
@@ -109,12 +120,12 @@ fetch(url)
 
 function done() {
   searchIndex = storedText.split('\n');
-  document.getElementById('output').textContent += " - index loaded successfully"
+  document.getElementById('output').textContent += " · index ready"
   showAllTags();
 }
 
 function updateResults() {
-  var inputStr = document.getElementById('searchInput').value;
+  var inputStr = document.getElementById('searchInput').value.trim();
 
   if(inputStr.length == 0){
     showAllTags();
@@ -137,44 +148,241 @@ function updateResults() {
     tags.push(strippedTag);
   }
 
-  var tagExp = new RegExp(tags.join( "|" ), "i");
+  var tagExpPattern = '(?=.*\\b' + tags.join('\\b)(?=.*\\b') + '\\b)';
+  var tagExp = new RegExp(tagExpPattern);
   
-  console.log(filterStrings);
-  console.log(tags);
+  if(filterStrings.length == 0)
+	filterStrings = ['('];
 
-  var filterExp = new RegExp(filterStrings.join( "|" ), "i");
+  var searchSansTags = filterStrings.join(" ");
+  var escapedSearch = searchSansTags.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  var filterExp = new RegExp(`(${escapedSearch})`, 'ig');
+  var scoredMatches = new Map();
 
+  searchIndex.forEach((entry) => {
+	  var matches = [];
+	  entry.replace(filterExp, function() {
+		  matches.push(Array.prototype.slice.call(arguments, 1).filter(Boolean)); //todo: unvoodoo
+	  });
+	  
+	  matches.forEach((match) => {
+		var input = match[0];
+		var output = stripParentheses(getWordAtIndex(match[2], match[1]), ['(', ')', '.', ',', '\"']);
+		
+		if(!output)
+			return;
+		
+		if(output.startsWith("http://") || output.startsWith("https://"))
+			return;
+			
+		var wordIndex = countCharacterOccurrences(match[2], ')', 0, match[1]);
+		var penaltyMultiplier = 1;
+		var flatPenalty = 0;
+		
+		switch (wordIndex) {
+		  case URL:
+			penaltyMultiplier = 100;
+			break;
+		  case NAME:
+			penaltyMultiplier = 1;
+			break;
+		  case DESCRIPTION:
+			penaltyMultiplier = 50;
+			flatPenalty = 1;
+			break;
+		  case CATEGORY:
+			penaltyMultiplier = 75;
+			flatPenalty = 1;
+			break;
+		  case KEYWORDS:
+			penaltyMultiplier = 100;
+			flatPenalty = 1;
+			break;
+		}
+		
+		var score = -getLevenshteinDistance(input, output) * penaltyMultiplier - flatPenalty;
+		
+		var scoredMatch = {
+			searchTerm: input,
+			match: output,
+			score: score,
+			wordIndex: wordIndex,
+			totalMatches: 1,
+			line: match[2],
+		};
+		
+		if(scoredMatches.has(match[2])){
+			var existing = scoredMatches.get(match[2]);
+			existing.totalMatches++;
+			
+			if(existing.score < score)
+				scoredMatches.set(match[2], scoredMatch)
+		}
+		else
+			scoredMatches.set(match[2], scoredMatch)
+	  });
+  });
+  
+  var scoredArr = [];
+  
+  scoredMatches.forEach((value, key) => {
+	scoredArr.push(value);
+  });
+  
+  scoredArr.sort((x, y) => {
+		return x.score > y.score ? -1 : 0
+  });
+  
+  console.log(scoredArr);
+  
   var ul = document.getElementById("results");
 
   while(ul.firstChild){
     ul.removeChild(ul.firstChild);
   }
 
-  searchIndex.forEach((element) => {
-    if(!element)
+  scoredArr.forEach((scoredMatch) => {
+    if(!scoredMatch)
       return;
+		
+	var words = scoredMatch.line.match(splitWordsExp);
+	var category = stripParentheses(words[CATEGORY], ['(', ')']);
+	
+	if(!tagExp.test(category))
+		return;
 
-    if(element && filterExp.test(element)){
-      var htmlResult = getResultString(element, tagExp);
+    var htmlResult = getResultString(scoredMatch.line);
 
-      if(htmlResult.length == 0)
-        return;
+    if(htmlResult.length == 0)
+      return;
       
-      var li = document.createElement("li");
-      li.insertAdjacentHTML("beforeend", htmlResult);
-      ul.appendChild(li);
-    }
+    var li = document.createElement("li");
+    li.insertAdjacentHTML("beforeend", htmlResult);
+    ul.appendChild(li);
   });
 }
 
-function getResultString(rawResult, tagExp){
-  var URL = 0;
-  var NAME = 1;
-  var DESCRIPTION = 2;
-  var CATEGORY = 3;
-  var KEYWORDS = 4;
-  var HEADER_WORD_COUNT = 5;
+function getWordAtIndex(str, index) {
+	if(!str)
+		return "";
 
+    var words = str.split(/\s+/);
+    var currentPosition = 0;
+    var currentWord = null;
+
+    for (var i = 0; i < words.length; i++) {
+        var endPosition = currentPosition + words[i].length;
+
+        if (index >= currentPosition && index < endPosition) {
+            currentWord = words[i];
+            break;
+        }
+
+        currentPosition = endPosition + 1;
+    }
+
+    return currentWord;
+}
+
+//https://stackoverflow.com/questions/18516942/fastest-general-purpose-levenshtein-javascript-implementation
+function getLevenshteinDistance(s, t) {
+    if (s === t) {
+        return 0;
+    }
+    var n = s.length, m = t.length;
+    if (n === 0 || m === 0) {
+        return n + m;
+    }
+    var x = 0, y, a, b, c, d, g, h;
+    var p = new Uint16Array(n);
+    var u = new Uint32Array(n);
+    for (y = 0; y < n;) {
+        u[y] = s.charCodeAt(y);
+        p[y] = ++y;
+    }
+
+    for (; (x + 3) < m; x += 4) {
+        var e1 = t.charCodeAt(x);
+        var e2 = t.charCodeAt(x + 1);
+        var e3 = t.charCodeAt(x + 2);
+        var e4 = t.charCodeAt(x + 3);
+        c = x;
+        b = x + 1;
+        d = x + 2;
+        g = x + 3;
+        h = x + 4;
+        for (y = 0; y < n; y++) {
+            a = p[y];
+            if (a < c || b < c) {
+                c = (a > b ? b + 1 : a + 1);
+            }
+            else {
+                if (e1 !== u[y]) {
+                    c++;
+                }
+            }
+
+            if (c < b || d < b) {
+                b = (c > d ? d + 1 : c + 1);
+            }
+            else {
+                if (e2 !== u[y]) {
+                    b++;
+                }
+            }
+
+            if (b < d || g < d) {
+                d = (b > g ? g + 1 : b + 1);
+            }
+            else {
+                if (e3 !== u[y]) {
+                    d++;
+                }
+            }
+
+            if (d < g || h < g) {
+                g = (d > h ? h + 1 : d + 1);
+            }
+            else {
+                if (e4 !== u[y]) {
+                    g++;
+                }
+            }
+            p[y] = h = g;
+            g = d;
+            d = b;
+            b = c;
+            c = a;
+        }
+    }
+
+    for (; x < m;) {
+        var e = t.charCodeAt(x);
+        c = x;
+        d = ++x;
+        for (y = 0; y < n; y++) {
+            a = p[y];
+            if (a < c || d < c) {
+                d = (a > d ? d + 1 : a + 1);
+            }
+            else {
+                if (e !== u[y]) {
+                    d = c + 1;
+                }
+                else {
+                    d = c;
+                }
+            }
+            p[y] = d;
+            c = a;
+        }
+        h = d;
+    }
+
+    return h;
+}
+
+function getResultString(rawResult){
   var url, name, description, category;
   var resultWords = rawResult.match(splitWordsExp);
 
@@ -182,7 +390,7 @@ function getResultString(rawResult, tagExp){
     return "";
 
   for (var i = 0; i < HEADER_WORD_COUNT; i++) { 
-    var word = stripParentheses(resultWords[i]);
+    var word = stripParentheses(resultWords[i], ['(', ')']);
     
     switch (i) {
       case URL:
@@ -195,9 +403,6 @@ function getResultString(rawResult, tagExp){
         description = word;
         break;
       case CATEGORY:
-        if(!tagExp.test(word))
-          return "";
-
         category = word;
         break;
       case KEYWORDS:
@@ -205,14 +410,29 @@ function getResultString(rawResult, tagExp){
     }
   }
   
-  var result = `<b><a href='${url}' onclick="resultOnClick(this)">${name}</a></b></br><small><sup>${category} · ${url}</sup></small></br class='smallSpace'/>${description}`;
+  var result = `<b><a href='${url}'>${name}</a></b></br><small><sup>${category} · ${url}</sup></small></br class='smallSpace'/>${description}`;
   return result;
 }
 
-function stripParentheses(str){
-  str = str.replaceAll('(','');
-  str = str.replaceAll(')','');
+function stripParentheses(str, symbols){
+
+  symbols.forEach((x) => {
+    str = str.replaceAll(x,'');
+  });
+
   return str;
+}
+
+function countCharacterOccurrences(str, character, startIndex, endIndex) {
+    var count = 0;
+
+    for (var i = startIndex; i <= endIndex; i++) {
+		if (str[i] === character) {
+            count++;
+        }
+    }
+
+    return count;
 }
 
 function showAllTags(){
@@ -230,7 +450,7 @@ function showAllTags(){
     var tagHtml = "";
 	sortedKeys.forEach((key) => {
 		var value = tagMap.get(key);
-		tagHtml += getLinkHtml(`${key}:`,`${key}(${value.val})`) + " ";
+		tagHtml += getLinkHtml(`${key}:`,`${key} · ${value.val}`) + "&nbsp&nbsp&nbsp&nbsp";
 	});
 	
 	var ul = document.getElementById("results");
@@ -251,7 +471,7 @@ function addTag(element, tagMap){
 	if(!allWords)
 		return;
 	
-    var tagWord = stripParentheses(allWords[CATEGORY]);
+    var tagWord = stripParentheses(allWords[CATEGORY], ['(', ')']);
 
     if(tagWord.length == 0)
       return;
