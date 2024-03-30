@@ -13,3 +13,4 @@
 (https://gist.github.com/KaanGaming/32492e2144c549b22d8eae516d550c8e) (Useful IL Opcodes) (Cheatsheet of useful IL OpCodes with concise descriptions.) (c# programming) (docs intermediate compiler sharplab)
 (https://www.redblobgames.com/) (Red Blob Games) (Interactive visual explanations of math and algorithms. A*, geometry, graph theory, grids and more) (math gamedev) (vornoi pathfinding noise map tesselation tile hex path)
 (https://fabiensanglard.net/doom_fire_psx/) (How DOOM fire was done) (Explanation of the cool fire effect present in some versions of DOOM.) (gamedev programming vfx retro) (shader demoscene reverse engineering)
+(https://youtu.be/yGhfUcPjXuE?si=mNDRAYvN045eI98N) (Dear Game Developers, Stop Messing This Up! DeltaTime in Unity) (Explanation of the deltaTime variable and how to use it correctly to avoid writing framerate-dependent code.) (youtube unity gamedev gameplay) (second integration fixed update)
