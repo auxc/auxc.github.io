@@ -5,6 +5,7 @@
 <style>
 body {
   font-family: Roboto, sans-serif;
+  overflow-y: scroll;
 }
 
 li:nth-child(even) { background: rgb(0 0 0 / 0.005)}
@@ -233,7 +234,7 @@ function updateResults() {
   });
   
   scoredArr.sort((x, y) => {
-		return x.score > y.score ? -1 : 0
+		return y.score - x.score;
   });
   
   var ul = document.getElementById("results");
