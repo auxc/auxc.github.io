@@ -21,16 +21,75 @@ body {
    border-top: 1px solid rgb(0 0 0 / 0.2);
 }
 
+.entryHeader {
+   background-color: rgb(252 252 252);
+   width: 80%;
+   padding-top: 5px;
+   padding-bottom: 4px;
+   padding-left: 8px;
+   margin-top: 15px;
+   margin-left: auto;
+   margin-right: auto;
+   font-size: medium;
+   border-top: 1px solid rgb(0 0 0 / 0.2);
+   border-bottom: 1px solid rgb(0 0 0 / 0.2);
+   filter: drop-shadow(0rem 0.35rem 0.66rem rgba(0, 0, 0, 0.08));
+}
+
+.largeText {
+   font-size: 35px;
+   margin-bottom: 8px;
+}
+
+.smallSpace {
+    height: 115px;
+}
+
+ol {
+    margin-top: 8px;
+	margin-left: -15px;
+}
+
+li{
+    margin-top: 3.5px;
+}
+
+p {
+    text-align:justify;
+	padding-right: 8px;
+}
+
 </style>
 <title>cobweb changelog</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕸️</text></svg>">
 </head>
-<body onload="test()">
+<body>
 
-test text
+<div class = "entryHeader">
+<small><time datetime="2024-03-29">March 29<sup>th</sup>, 2024</time></small>
+<div class = "largeText">Version 0.1 🕸️ cobweb</div>
+
+<p>Introducing the first usable version of cobweb. The website has basic search functionality to browse the index, and a frontpage featuring all available tags.</p>
+<p>The goal of the project is to create a place where a small group of friends can share and browse interesting bits of the broader internet. Development will focus on improving link sharing, search, organization and archiving features.</p>
+<p>All the underlying tech is naive and expected to be replaced with something robust once I'm done experimenting with features. It is however in the spirit of this edeavor to be at least a little old fashioned. Expect a certain level of hacky whimsy that was lost in computing somewhere along the way moving on from Windows 98. Hence the name, <strong>cobweb</strong>. Still the world wide web, but it feels like visiting a quirky old attic instead.</p>
+
+<h3>Changelog</h3>
+
+<b>Search</b>
+<ol>
+  <li>Displays all items from the index that match the search terms.</li>
+  <li>Spaces between input words are treated as logical AND. If any words do not match at all, an item is not considered a search result.</li>
+  <li>Page order is based on partial match score calculated using <a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Levenshtein Distance</a>. Close matches in header and description text are valued more than ones in tags and hidden keywords.</li>
+  <li>Search can be further narrowed down by specifying tags using the following syntax: <i>tag1: tag2: tag3: (...)</i></li>
+</ol>
+<b>Frontpage</b>
+<ol>
+  <li>All tags present in the index are displayed as links on the frontpage when no search terms are provided.</li>
+</ol>
+</div>
 
 <div id="footer">
-<small id = "output">v0.1 🕸️ cobweb · curios found by auxc & friends</small>
+<small id = "output">v0.1 🕸️ cobweb</small>
 </div>
 </body>
 </html>
