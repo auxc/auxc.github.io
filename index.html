@@ -62,6 +62,30 @@ li {
    color: rgb(0 0 0 / 0.8);
 }
 
+.tagLink {
+  margin-right: 15px;
+  white-space: nowrap;
+  text-decoration:none;
+  color: rgb(255 255 255);
+  text-shadow: 0px 1px 3px rgb(64 64 64);
+  font-weight: 700;
+  line-height: 250%;
+  background-color: rgb(180 180 180);
+  border-radius: 10px;
+  border-style: solid;
+  border: 1px solid rgb(0 0 0 / 0.3);
+  box-shadow: 0px 2px 5px rgb(0 0 0 / 0.1);
+  padding: 5px 5px;
+}
+
+.tagCounter {
+   color: rgb(32 32 32);
+   text-decoration:none;
+   text-shadow: 0px 1px 0px rgb(220 220 220);
+   margin-left: 8px;
+   padding: 0px 2px;
+}
+
 .loader {
   border: 6px double #f3f3f3;
   border-top: 6px solid rgb(0 0 0 / 0.66);
@@ -457,7 +481,7 @@ function showAllTags(){
     var tagHtml = "";
 	sortedKeys.forEach((key) => {
 		var value = tagMap.get(key);
-		tagHtml += getLinkHtml(`${key}:`,`${key} · ${value.val}`) + "&nbsp&nbsp&nbsp&nbsp";
+		tagHtml += getLinkHtml(`${key}:`,`${key}`,`${value.val}`) + " ";
 	});
 	
 	var ul = document.getElementById("results");
@@ -496,8 +520,8 @@ function addTag(element, tagMap){
     });
 }
 
-function getLinkHtml(url, text){
-    return `<a href='${url}' onclick="return resultOnClick(this)">${text}</a>`;
+function getLinkHtml(url, text, suffix){
+    return `<a href='${url}' class="tagLink" onclick="return resultOnClick(this)">${text}<span class="tagCounter">${suffix}</span></a>`;
 }
 
 function resultOnClick(arg){
