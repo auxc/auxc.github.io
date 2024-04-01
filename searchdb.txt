@@ -23,3 +23,4 @@
 (https://archive.org/details/internetarcade) (The Internet Arcade) (Arcade games archived by the Internet Archive. Play arcade games in the browser going all the way back to 1971.) (game retro) (arcade emulator emulate old history)
 (https://www.cyanilux.com/contents/#tutorial-posts) (Cyanilux - shader and gamedev tutorials) (Numerous in-depth explanations of render pipelines in Unity, shader fundamentals and Unity engine features related to rendering. Breakdowns of many cool looking shader effects.) (gamedev graphics shaders vfx tech-art) (visual effect vfx graph urp post processing)
 (https://auxc.github.io/changelog) (Cobweb changelog) (Change history and dev notes for the project.) (cobweb) (version patch doc documentation)
+(https://oeis.org/) (The On-Line Encyclopedia of Integer Sequences) (Identify or browse sequences of integer numbers. Look up if partial answer to a problem matches any known sequences.) (math) (formula digit)
