@@ -70,7 +70,6 @@ li {
   text-shadow: 0px 1px 3px rgb(64 64 64);
   font-weight: 700;
   line-height: 250%;
-  background-color: rgb(180 180 180);
   border-radius: 10px;
   border-style: solid;
   border: 1px solid rgb(0 0 0 / 0.3);
@@ -79,9 +78,9 @@ li {
 }
 
 .tagCounter {
-   color: rgb(32 32 32);
+   color: rgb(255 255 255);
    text-decoration:none;
-   text-shadow: 0px 1px 0px rgb(220 220 220);
+   text-shadow: 0px 2px 50px rgba(220 220 220 255);
    margin-left: 8px;
    padding: 0px 2px;
 }
@@ -479,9 +478,12 @@ function showAllTags(){
 	var sortedKeys = Array.from(tagMap.keys()).sort();
 
     var tagHtml = "";
+	var counter = 0;
 	sortedKeys.forEach((key) => {
 		var value = tagMap.get(key);
-		tagHtml += getLinkHtml(`${key}:`,`${key}`,`${value.val}`) + " ";
+		var color01 = counter / sortedKeys.length;
+		tagHtml += getTagLinkHtml(`${key}:`,`${key}`,`${value.val}`, color01) + " ";
+		counter++;
 	});
 	
 	var ul = document.getElementById("results");
@@ -520,8 +522,24 @@ function addTag(element, tagMap){
     });
 }
 
-function getLinkHtml(url, text, suffix){
-    return `<a href='${url}' class="tagLink" onclick="return resultOnClick(this)">${text}<span class="tagCounter">${suffix}</span></a>`;
+function getTagLinkHtml(url, text, suffix, color01){
+	var a = [0.5, 0.5, 0.5];
+	var b = [0.5, 0.2, 0.3];
+	var c = [1.0, 1.0, 1.0];
+	var d = [0.0, 0.3, 0.6];
+	var bgColor01 = cosinePalette(color01, a, b, c, d);
+	var bgColor = `${bgColor01[0]*255} ${bgColor01[1]*255} ${bgColor01[2]*255}`
+	console.log(bgColor);
+    return `<a href='${url}' class="tagLink" style="background-color: rgb(${bgColor});" onclick="return resultOnClick(this)">${text}<span class="tagCounter">${suffix}</span></a>`;
+}
+
+//https://www.shadertoy.com/view/ll2GD3
+function cosinePalette(col01, a, b, c, d) {
+    return [
+        a[0] + b[0] * Math.cos(6.28318 * (c[0] * col01 + d[0])),
+        a[1] + b[1] * Math.cos(6.28318 * (c[1] * col01 + d[1])),
+        a[2] + b[2] * Math.cos(6.28318 * (c[2] * col01 + d[2]))
+    ];
 }
 
 function resultOnClick(arg){
