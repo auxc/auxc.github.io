@@ -58,6 +58,10 @@ li {
    border-top: 1px solid rgb(0 0 0 / 0.2);
 }
 
+.footerLink {
+   color: rgb(0 0 0 / 0.8);
+}
+
 .loader {
   border: 6px double #f3f3f3;
   border-top: 6px solid rgb(0 0 0 / 0.66);
@@ -92,7 +96,7 @@ li {
 </ul>
 
 <div id="footer">
-<small id = "output">v0.1 🕸️ cobweb · curios found by auxc & friends</small>
+<small id = "output">v0.11 🕸️ cobweb · curios found by auxc & friends</small>
 </div>
 
 <script>
@@ -122,7 +126,7 @@ fetch(url)
 
 function done() {
   searchIndex = storedText.split('\n');
-  document.getElementById('output').textContent += " · index ready"
+  document.getElementById('output').insertAdjacentHTML("beforeend", ` · <a class="footerLink" href="searchdb.txt">index(${searchIndex.length})</a>`);
   showAllTags();
 }
 
