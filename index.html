@@ -22,12 +22,36 @@ li {
   margin-bottom: 30px; 
 }
 
+#tagBox {
+  list-style-type:none;
+  padding-left: 0;
+  margin-left: 1%;
+  margin-right: 1%;
+  margin-bottom: 2px; 
+}
+
+
 #searchInput {
-  width: 97%;
-  border-radius: 5px;
+  flex-grow: 1;
+  height= 10px;
+
   border: 1px solid rgb(0 0 0 / 0.5);
-  padding: 5px; 
+  border-left: 0rem solid green; 
+  padding: 8px; 
   box-shadow: 0px 2px 5px rgb(0 0 0 / 0.1);
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+#searchInput:focus {
+	outline: none;
+	box-shadow: inset 0 0 3.5px rgb(0 0 0 / 0.133);
+}
+
+.searchContainer {
+  display: flex;
+  align-content: start;
+  height: 30px;
 }
 
 #divider {
@@ -85,6 +109,50 @@ li {
    padding: 0px 2px;
 }
 
+.tagSearchPill {
+  white-space: nowrap;
+  text-decoration:none;
+  color: rgb(255 255 255);
+  text-shadow: 0px 1px 3px rgb(64 64 64);
+  font-weight: 700;
+  border-style: solid;
+  border-top: 1px solid rgb(0 0 0 / 0.3);
+  border-bottom: 1px solid rgb(0 0 0 / 0.3);
+  border-right: 1px solid rgb(0 0 0 / 0.3); 
+  border-left: 0rem solid green; 
+  
+  box-shadow: 0px 2px 5px rgb(0 0 0 / 0.1);
+  padding: 5px 5px;
+  
+  height: 100%;
+  position:relative;
+  float:left;
+  margin: 0 0 2% 0;
+}
+
+.mainDropdown {
+  padding: 3.5px 6px 15px 10px;
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+  border: 1px double rgb(0 0 0 / 0.4);
+}
+
+.mainDropdownIdleAnim {
+  background: 
+   linear-gradient(rgba(255,0,0,1) 0%, rgba(255,154,0,1) 10%, rgba(208,222,33,1) 20%, rgba(79,220,74,1) 30%, rgba(63,218,216,1) 40%, rgba(47,201,226,1) 50%, rgba(28,127,238,1) 60%, rgba(95,21,242,1) 70%, rgba(186,12,248,1) 80%, rgba(251,7,217,1) 90%, rgba(255,0,0,1) 100%) 
+   0 0/100% 200%;
+  animation: rainbow 10s linear infinite;
+  animation-direction: forward;
+}
+
+.logo:hover, logo:active {
+  animation: pressDown 0.1s linear 1;
+  animation-fill-mode: forwards;
+  color: rgb(255 255 255);
+  text-shadow: 0px 1px 6px rgb(0 0 0 / 0.3);
+  display: inline-block; 
+}
+
 .loader {
   border: 6px double #f3f3f3;
   border-top: 6px solid rgb(0 0 0 / 0.66);
@@ -107,15 +175,38 @@ li {
   100% { transform: rotate(360deg); }
 }
 
+@keyframes pressDown {
+	0% {
+		transform: scale(1);
+	}
+
+	100% {
+		transform: scale(0.8);
+	}
+}
+
+@keyframes rainbow{
+  to {background-position:0 -200%}
+}
+
+
 </style>
 <title>cobweb</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕸️</text></svg>">
 </head>
 <body onload="test()">
-<center><input type="search" oninput="updateResults()" id = "searchInput" placeholder=" type to begin"></center>
+<center>
+<p class = "searchContainer">
+<button class="mainDropdown" id="mainButton" onclick="resetSearch()"><span class="logo">🕸️</span></button>
+<span id="searchContainerId"></span>
+<input oninput="updateResults()" id = "searchInput" placeholder="type to begin"></input>
+</p>
+</center>
 <hr id="divider" />
-<ul id='results'>
+<ul id='tagBox'>
 <div id="init_loader" class="loader"></div>
+</ul>
+<ul id='results'>
 </ul>
 
 <div id="footer">
@@ -129,6 +220,9 @@ var searchIndex;
 
 var splitWordsExp = /\(([^)]+)\)/g;
 var tagExp =  /([^:\s]+):([^:\s]+)/g;
+var globalTags = new Array();
+var allTags = new Map();
+var tagColorMap = new Map();
 
 var URL = 0;
 var NAME = 1;
@@ -137,7 +231,14 @@ var CATEGORY = 3;
 var KEYWORDS = 4;
 var HEADER_WORD_COUNT = 5;
 
+function buttonTest(){
+	alert("hello");
+}
+
 function test(){
+var input = document.getElementById('searchInput');
+input.addEventListener('keydown', onKeyDown);
+
 fetch(url)
   .then(function(response) {
     response.text().then(function(text) {
@@ -150,20 +251,27 @@ fetch(url)
 function done() {
   searchIndex = storedText.split('\n');
   document.getElementById('output').insertAdjacentHTML("beforeend", ` · <a class="footerLink" href="searchdb.txt">index(${searchIndex.length})</a>`);
-  showAllTags();
+  showAllTags(true);
+}
+
+function resetSearch(){
+	document.getElementById('searchInput').value = "";
+	globalTags.length = 0;
+	updateResults();
 }
 
 function updateResults() {
-  var inputStr = document.getElementById('searchInput').value.trim();
+  var ul = document.getElementById("results");
 
-  if(inputStr.length == 0){
-    showAllTags();
-    return;
+  while(ul.firstChild){
+    ul.removeChild(ul.firstChild);
   }
-  
-  var filterStrings = inputStr.split(' ');
-  var tags = new Array();
 
+  var inputElement = document.getElementById('searchInput');
+  var rawInput = inputElement.value;
+  var inputStr = rawInput.trim();
+  var filterStrings = inputStr.split(' ');
+  
   for(var i = 0; i < filterStrings.length; i++){
     var next = filterStrings[i];
 
@@ -174,31 +282,52 @@ function updateResults() {
     i--;
 
     var strippedTag = next.replace(":", "");
-    tags.push(strippedTag);
+    globalTags.push(strippedTag);
   }
 
-  var tagExpPattern = '(?=.*(?:^|\\s)' + tags.map(tag => tag.replace(/#/g, '\\#')).join('(?:\\s|$))(?=.*(?:^|\\s)') + '(?:\\s|$))';
+  var tagExpPattern = '(?=.*(?:^|\\s)' + globalTags.map(tag => tag.replace(/#/g, '\\#')).join('(?:\\s|$))(?=.*(?:^|\\s)') + '(?:\\s|$))';
   var tagExp = new RegExp(tagExpPattern);
-  var anyTags = tags.length > 0;
+  var anyTags = globalTags.length > 0;
+
+  var showUnrelated = (inputStr.length == 0 && !anyTags)
+  showAllTags(showUnrelated);
+  updateSearchPills();
   
-  //hack to dump all matching entries if all search words were stripped as tags
-  if(filterStrings.length == 0) 
-	filterStrings = ['('];
+  //tags moved to pills, update visible input
+  var searchTextToDisplay = filterStrings.join(" ");
+
+  if(rawInput.endsWith(" ") && searchTextToDisplay.length > 0)
+	searchTextToDisplay += " ";
+	
+  inputElement.value = searchTextToDisplay;
+  inputElement.focus({ preventScroll: true });
+  
+  //hack to dump all matching entries if all search words were stripped as tags  
+  if(globalTags.length > 0 && (filterStrings.length == 0 || inputStr == "")) {
+  	filterStrings = ['('];
+  }
 
   var searchSansTags = filterStrings.join(" ");
   var escapedSearch = searchSansTags.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   var filterExp = new RegExp(`(${escapedSearch})`, 'ig');
   var scoredMatches = new Map();
-
+  
   searchIndex.forEach((entry) => {
 	  var matches = [];
+
 	  entry.replace(filterExp, function() {
 		  matches.push(Array.prototype.slice.call(arguments, 1).filter(Boolean)); //todo: unvoodoo
 	  });
 	  
 	  matches.forEach((match) => {
 		var input = match[0];
-		var output = stripParentheses(getWordAtIndex(match[2], match[1]), ['(', ')', '.', ',', '\"']);
+		
+		var wordAtIndex = getWordAtIndex(match[2], match[1]);
+		
+		if(!wordAtIndex) //todo: check the null that comes up here sometimes
+			return;
+
+		var output = stripParentheses(wordAtIndex, ['(', ')', '.', ',', '\"']);
 		
 		if(!output)
 			return;
@@ -263,12 +392,8 @@ function updateResults() {
   scoredArr.sort((x, y) => {
 		return y.score - x.score;
   });
-  
-  var ul = document.getElementById("results");
 
-  while(ul.firstChild){
-    ul.removeChild(ul.firstChild);
-  }
+  var showingAny = false;
 
   scoredArr.forEach((scoredMatch) => {
     if(!scoredMatch)
@@ -277,9 +402,10 @@ function updateResults() {
 	var words = scoredMatch.line.match(splitWordsExp);
 	var category = stripParentheses(words[CATEGORY], ['(', ')']);
 	
+	category = category.replaceAll("/", " ");
+	
 	if(anyTags && !tagExp.test(category))
 		return;
-
 
     var htmlResult = getResultString(scoredMatch.line);
 
@@ -289,7 +415,10 @@ function updateResults() {
     var li = document.createElement("li");
     li.insertAdjacentHTML("beforeend", htmlResult);
     ul.appendChild(li);
+	showingAny = true;
   });
+  
+  document.getElementById('mainButton').classList.toggle("mainDropdownIdleAnim", showingAny);
 }
 
 function getWordAtIndex(str, index) {
@@ -433,7 +562,7 @@ function getResultString(rawResult){
         description = word;
         break;
       case CATEGORY:
-        category = word;
+        category = word.replaceAll("/", " ");
         break;
       case KEYWORDS:
         break;
@@ -465,28 +594,57 @@ function countCharacterOccurrences(str, character, startIndex, endIndex) {
     return count;
 }
 
-function showAllTags(){
-    var tagMap = new Map();
-  
-    searchIndex.forEach((element) => {
-      if(!element)
-        return;
-      
-      addTag(element, tagMap);
-    });
+function showAllTags(includeUnrelated){  
 
-	var sortedKeys = Array.from(tagMap.keys()).sort();
+	if(allTags.size == 0){
+		  searchIndex.forEach((element) => {
+		  if(!element)
+			return;
+		  
+		  addTag(element, allTags);
+		});
+	}
+	
+	var sortedKeys = new Array();
+	var allSubtags = new Map();
+	
+	allTags.forEach((tag, key) =>{
+		if(globalTags.includes(key)){
+			tag.subtagMap.forEach((subTag, subKey) => {
+				if(globalTags.includes(subKey))
+					return;
+					
+				if(sortedKeys.includes(subKey))
+					return;
+					
+				if(!subKey) //coming from new map call when constructing maps in add tag, todo: unvoodoo
+					return;
+				
+				allSubtags.set(subKey, subTag);
+				sortedKeys.push(subKey);
+			});
+		}
+		else if(includeUnrelated) {
+			sortedKeys.push(key);
+		}
+	});
+	
+	sortedKeys.sort();
 
-    var tagHtml = "";
+	var tagHtml = "";
 	var counter = 0;
 	sortedKeys.forEach((key) => {
-		var value = tagMap.get(key);
+		var value = allTags.get(key);
+		
+		if(!value)
+			value = allSubtags.get(key);
+		
 		var color01 = counter / sortedKeys.length;
-		tagHtml += getTagLinkHtml(`${key}:`,`${key}`,`${value.val}`, color01) + " ";
+		tagHtml += getTagLinkHtml(`${key}:`,`${key}`,`${value.val}`, color01, key) + " ";
 		counter++;
 	});
 	
-	var ul = document.getElementById("results");
+	var ul = document.getElementById("tagBox");
 
 	while(ul.firstChild){
 		ul.removeChild(ul.firstChild);
@@ -515,21 +673,36 @@ function addTag(element, tagMap){
       if(!tag)
         return;
       
-      if(tagMap.has(tag))
-        tagMap.get(tag).val++;
-      else
-        tagMap.set(tag, {val: 1})
+      [maintag, subtag] = tag.split('/');
+	  
+      if(tagMap.has(maintag))
+        tagMap.get(maintag).val++;
+      else {
+		tagMap.set(maintag, {val: 1, subtagMap: new Map()});
+	  }
+		
+	  var t = tagMap.get(maintag);
+	  
+	  if(t.subtagMap.has(subtag))
+		t.subtagMap.get(subtag).val++;
+	  else
+	    t.subtagMap.set(subtag, {val: 1});
     });
 }
 
-function getTagLinkHtml(url, text, suffix, color01){
+function getTagLinkHtml(url, text, suffix, color01, tag){
 	var a = [0.5, 0.5, 0.5];
 	var b = [0.5, 0.2, 0.3];
 	var c = [1.0, 1.0, 1.0];
 	var d = [0.0, 0.3, 0.6];
 	var bgColor01 = cosinePalette(color01, a, b, c, d);
 	var bgColor = `${bgColor01[0]*255} ${bgColor01[1]*255} ${bgColor01[2]*255}`
-	console.log(bgColor);
+	
+	if(tagColorMap.has(tag))
+		tagColorMap.get(tag).color = bgColor;
+	else
+		tagColorMap.set(tag, {color: bgColor});
+	
     return `<a href='${url}' class="tagLink" style="background-color: rgb(${bgColor});" onclick="return resultOnClick(this)">${text}<span class="tagCounter">${suffix}</span></a>`;
 }
 
@@ -542,11 +715,70 @@ function cosinePalette(col01, a, b, c, d) {
     ];
 }
 
+function updateSearchPills(){
+	var doc = document.getElementById("searchContainerId");
+	var toRemove = new Array();
+
+	for (var i = 0; i < doc.childNodes.length; i++) {
+		if (doc.childNodes[i].className == "tagSearchPill") {
+			doc.removeChild(doc.childNodes[i]);
+			i--;
+    }        
+}
+	globalTags.forEach((x) => {
+		var bgColor = "64, 64, 64";
+	
+		if(tagColorMap.has(x)){
+			bgColor = tagColorMap.get(x).color;
+		}
+	
+		var html = getSearchPillHtml(x, bgColor);
+		doc.insertAdjacentHTML("beforeend", html)
+	});
+}
+
+function getSearchPillHtml(tag, bgColor){
+    return `<button class="tagSearchPill" onclick="onTagSearchPillClick(this)" style="background-color: rgb(${bgColor});">${tag} ×</button>`;
+}
+
 function resultOnClick(arg){
-    document.getElementById('searchInput').value = arg.getAttribute("href");
+	var searchString = document.getElementById('searchInput').value;
+	searchString = `${arg.getAttribute("href")} ${searchString}`;
+    document.getElementById('searchInput').value = searchString;
 	updateResults();
 	return false;
 }
+
+function onTagSearchPillClick(button){
+	[tag, unused] = button.textContent.split(" ");
+	const index = globalTags.indexOf(tag);
+	
+	if (index == -1)
+		return;
+	
+	globalTags.splice(index, 1);
+	updateResults();
+}
+
+function onKeyDown(event) {
+    const key = event.key;
+	var refreshResults = false;
+
+	console.log();
+
+    if (key === "Backspace") {
+		var shouldDelete = event.target.selectionStart == 0 && globalTags.length > 0;
+	
+		if(shouldDelete){
+			globalTags.length = Math.max(globalTags.length - 1, 0);
+			refreshResults = true;
+		}
+    }
+	
+	if(refreshResults)
+		updateResults();
+}
+
 </script>
 </body>
 </html>
