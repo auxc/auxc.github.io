@@ -300,7 +300,12 @@ function updateResults() {
 	searchTextToDisplay += " ";
 	
   inputElement.value = searchTextToDisplay;
-  inputElement.focus({ preventScroll: true });
+  
+  //focus is for pc only, on mobile the keyboard is annoying
+  if (!/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+	inputElement.focus({ preventScroll: true });
+}
+
   
   //hack to dump all matching entries if all search words were stripped as tags  
   if(globalTags.length > 0 && (filterStrings.length == 0 || inputStr == "")) {
