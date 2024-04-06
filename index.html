@@ -52,6 +52,14 @@ li {
   display: flex;
   align-content: start;
   height: 30px;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+}
+
+#searchContainerId {
+  display: flex;
+  white-space: nowrap;
+    flex-wrap: nowrap;
 }
 
 #divider {
@@ -730,7 +738,7 @@ function updateSearchPills(){
     }        
 }
 	globalTags.forEach((x) => {
-		var bgColor = "64, 64, 64";
+		var bgColor = "230, 230, 230";
 	
 		if(tagColorMap.has(x)){
 			bgColor = tagColorMap.get(x).color;
