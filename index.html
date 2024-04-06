@@ -282,7 +282,7 @@ function updateResults() {
     i--;
 
     var strippedTag = next.replace(":", "");
-    globalTags.push(strippedTag);
+    globalTags.push(strippedTag.toLowerCase());
   }
 
   var tagExpPattern = '(?=.*(?:^|\\s)' + globalTags.map(tag => tag.replace(/#/g, '\\#')).join('(?:\\s|$))(?=.*(?:^|\\s)') + '(?:\\s|$))';
@@ -304,9 +304,8 @@ function updateResults() {
   //focus is for pc only, on mobile the keyboard is annoying
   if (!/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
 	inputElement.focus({ preventScroll: true });
-}
+  }
 
-  
   //hack to dump all matching entries if all search words were stripped as tags  
   if(globalTags.length > 0 && (filterStrings.length == 0 || inputStr == "")) {
   	filterStrings = ['('];
