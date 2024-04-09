@@ -272,6 +272,8 @@ var searchIndex;
 var splitWordsExp = /\(([^)]+)\)/g;
 var tagExp =  /([^:\s]+):([^:\s]+)/g;
 var globalTags = new Array();
+var globalResults = new Array();
+var globalCategoryMap = new Map();
 var allTags = new Map();
 var tagColorMap = new Map();
 
@@ -281,10 +283,6 @@ var DESCRIPTION = 2;
 var CATEGORY = 3;
 var KEYWORDS = 4;
 var HEADER_WORD_COUNT = 5;
-
-function buttonTest(){
-	alert("hello");
-}
 
 function test(){
 var input = document.getElementById('searchInput');
@@ -302,7 +300,7 @@ fetch(url)
 function done() {
   searchIndex = storedText.split('\n');
   document.getElementById('output').insertAdjacentHTML("beforeend", ` · <a class="footerLink" href="searchdb.txt">index(${searchIndex.length})</a>`);
-  showAllTags(true);
+  showAllTags();
 }
 
 function resetSearch(){
@@ -317,6 +315,9 @@ function updateResults() {
   while(ul.firstChild){
     ul.removeChild(ul.firstChild);
   }
+  
+  globalResults.length = 0;
+  globalCategoryMap.clear();
 
   var inputElement = document.getElementById('searchInput');
   var rawInput = inputElement.value;
@@ -339,10 +340,6 @@ function updateResults() {
   var tagExpPattern = '(?=.*(?:^|\\s)' + globalTags.map(tag => tag.replace(/#/g, '\\#')).join('(?:\\s|$))(?=.*(?:^|\\s)') + '(?:\\s|$))';
   var tagExp = new RegExp(tagExpPattern);
   var anyTags = globalTags.length > 0;
-
-  var showUnrelated = (inputStr.length == 0 && !anyTags)
-  showAllTags(showUnrelated);
-  updateSearchPills();
   
   //tags moved to pills, update visible input
   var searchTextToDisplay = filterStrings.join(" ");
@@ -351,11 +348,6 @@ function updateResults() {
 	searchTextToDisplay += " ";
 	
   inputElement.value = searchTextToDisplay;
-  
-  //focus is for pc only, on mobile the keyboard is annoying
-  if (!/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-	inputElement.focus({ preventScroll: true });
-  }
 
   //hack to dump all matching entries if all search words were stripped as tags  
   if(globalTags.length > 0 && (filterStrings.length == 0 || inputStr == "")) {
@@ -456,12 +448,11 @@ function updateResults() {
 		
 	var words = scoredMatch.line.match(splitWordsExp);
 	var category = stripParentheses(words[CATEGORY], ['(', ')']);
-	
-	category = category.replaceAll("/", " ");
-	
+
 	if(anyTags && !tagExp.test(category))
 		return;
 
+	var categories = new Array();
     var htmlResult = getResultString(scoredMatch.line);
 
     if(htmlResult.length == 0)
@@ -471,8 +462,11 @@ function updateResults() {
     li.insertAdjacentHTML("beforeend", htmlResult);
     ul.appendChild(li);
 	showingAny = true;
+	globalResults.push(scoredMatch);
   });
   
+  showAllTags();
+  updateSearchPills();
   document.getElementById('mainButton').classList.toggle("mainDropdownIdleAnim", showingAny);
 }
 
@@ -596,7 +590,7 @@ function getLevenshteinDistance(s, t) {
     return h;
 }
 
-function getResultString(rawResult){
+function getResultString(rawResult, outCategories){
   var url, name, description, category;
   var resultWords = rawResult.match(splitWordsExp);
 
@@ -617,7 +611,14 @@ function getResultString(rawResult){
         description = word;
         break;
       case CATEGORY:
-        category = word.replaceAll("/", " ");
+		word.split(" ").forEach((cat) => {
+			if(globalCategoryMap.has(cat))
+				globalCategoryMap.get(cat).val++;
+			else
+				globalCategoryMap.set(cat, {val: 1});
+		});
+		
+        category = word;
         break;
       case KEYWORDS:
         break;
@@ -658,7 +659,7 @@ function countCharacterOccurrences(str, character, startIndex, endIndex) {
     return count;
 }
 
-function showAllTags(includeUnrelated){  
+function showAllTags(){  
 
 	if(allTags.size == 0){
 		  searchIndex.forEach((element) => {
@@ -670,41 +671,31 @@ function showAllTags(includeUnrelated){
 	}
 	
 	var sortedKeys = new Array();
-	var allSubtags = new Map();
 	
-	allTags.forEach((tag, key) =>{
-		if(globalTags.includes(key)){
-			tag.subtagMap.forEach((subTag, subKey) => {
-				if(globalTags.includes(subKey))
-					return;
-					
-				if(sortedKeys.includes(subKey))
-					return;
-					
-				if(!subKey) //coming from new map call when constructing maps in add tag, todo: unvoodoo
-					return;
-				
-				allSubtags.set(subKey, subTag);
-				sortedKeys.push(subKey);
-			});
-		}
-		else if(includeUnrelated) {
-			sortedKeys.push(key);
-		}
+	allTags.forEach((value, key) => {
+		if(globalCategoryMap.size > 0 && !globalCategoryMap.has(key))
+			return;
+			
+		if(globalTags.includes(key))
+			return;
+			
+		if(globalCategoryMap.size > 0 && globalCategoryMap.get(key).val >= globalResults.length)
+			return;
+			
+		var localCount = globalCategoryMap.size > 0 ? globalCategoryMap.get(key).val : value.val;
+		sortedKeys.push({name: key, count: localCount});
 	});
 	
-	sortedKeys.sort();
+	sortedKeys.sort((x, y) => {
+		return y.count - x.count;
+	});
 
 	var tagHtml = "";
 	var counter = 0;
 	sortedKeys.forEach((key) => {
-		var value = allTags.get(key);
-		
-		if(!value)
-			value = allSubtags.get(key);
-		
 		var color01 = counter / sortedKeys.length;
-		tagHtml += getTagLinkHtml(`${key}:`,`${key}`,`${value.val}`, color01, key) + " ";
+		var localCount = globalCategoryMap.size > 0 ? globalCategoryMap.get(key.name).val :  key.count;
+		tagHtml += getTagLinkHtml(`${key.name}:`,`${key.name}`,`${localCount}`, color01, key.name) + " ";
 		counter++;
 	});
 	
@@ -713,6 +704,9 @@ function showAllTags(includeUnrelated){
 	while(ul.firstChild){
 		ul.removeChild(ul.firstChild);
 	}
+	
+	if(globalResults.length == 1)
+		return;
 
     var li = document.createElement("li");
     li.insertAdjacentHTML("beforeend", tagHtml);
@@ -737,20 +731,11 @@ function addTag(element, tagMap){
       if(!tag)
         return;
       
-      [maintag, subtag] = tag.split('/');
-	  
-      if(tagMap.has(maintag))
-        tagMap.get(maintag).val++;
-      else {
-		tagMap.set(maintag, {val: 1, subtagMap: new Map()});
+	  if(tagMap.has(tag))
+		tagMap.get(tag).val++;
+	  else {
+		tagMap.set(tag, {val: 1 });
 	  }
-		
-	  var t = tagMap.get(maintag);
-	  
-	  if(t.subtagMap.has(subtag))
-		t.subtagMap.get(subtag).val++;
-	  else
-	    t.subtagMap.set(subtag, {val: 1});
     });
 }
 
