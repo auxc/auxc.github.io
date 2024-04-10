@@ -106,11 +106,44 @@ p {
 <ol>
   <li>Supports modifying existing records. Editing a message in bot terminal triggers the update.</li>
 </ol>
-</div>
 <br></br>
+<small><time datetime="2024-04-06">April 6<sup>th</sup>, 2024</time></small>
+<div class = "largeText">Version 0.3</div>
+<p>The first experiment with tag hierarchy. The goal is to allow a large amount of specific identifiers associated with each page, making searching and navigation problems easier to solve.</p>
+<p>Large number of tags are expected to be a challenge in two ways: to display correctly in the frontend, and to keep accurate in the backend with tag and page combinations growing rapidly in a real deployment.</p>
+<h3>Frontpage</h3>
+<ol>
+  <li>Tags can now be nested. Nested tags show up when the parent is a part of the search.</li>
+  <li>Tags added to the search are now displayed inside the input box and can removed by clicking or pressing backspace.</li>
+  <li>Added a Home button on the left side of the search input box. Currently it allows clearing the search and going back to the home page. In the future, this button will hold the options menu as a drop-down list.</li>
+</ol>
+<br></br>
+<small><time datetime="2024-04-07">April 7<sup>th</sup>, 2024</time></small>
+<div class = "largeText">Version 0.4</div>
+<h3>Frontpage</h3>
+<ol>
+  <li>Added an optional html container to the search result template. The tray unfolds when a button is pressed next to the header. Currently used to hold embedded Youtube videos.</li>
+  <li>All youtube video and playlist links automatically generate video embeds that can played inside of the results page. The widgets are only loaded when the user presses the button to show them.</li>
+</ol>
+<br></br>
+<small><time datetime="2024-04-08">April 8<sup>th</sup>, 2024</time></small>
+<div class = "largeText">Version 0.5 🧬 tagweb</div>
+<p>The first tag experiment predictably wasn't very usable. Setting up tag relations inside the contents of each index entry proved to be hard to think about and unmaintainable even at a reasonably small index size.</p>
+<p>The  approaches the hierarchy as an emergent property of the index. The solution follows two simple rules:
+<ol>
+<li>Display only the tags that are relevant to the currently ongoing search.</li>
+<li>Tag order in any UI where they are expected to be browsed defaults to sorting by the number of results a click would yield.</li>
+</ol></p>
+<p>Maintenance is still a problem to be solved, but the goal is clear when editing an entry: keep the tags and descriptions accurate without worrying about the hierarchy.</p>
+<h3>Frontpage</h3>
+<ol>
+  <li>Relevant tags are now displayed at all times below the search bar to help browse the index by mouse and narrow down the search.</li>
+  <li>Tags that would produce 0 results or no change are not shown.</li>
+</ol>
+</div>
 
 <div id="footer">
-<small id = "output">v0.2 🕸️ cobweb</small>
+<small id = "output">v0.5 🧬 cobweb</small>
 </div>
 </body>
 </html>
