@@ -51,3 +51,4 @@
 (https://youtu.be/13LNt5innaI?si=KZhW1w-XzbjrxZgk) (Silent Hill but it's a 2000's Alt Rock album) (Alt rock tracks picked from the OST of various Silent Hill games.) (youtube music alt-rock rock game-ost) (shoegaze soundtrack)
 (https://youtu.be/SN-maHm0c4Q?si=i9Fh5Bwl3JVyb4rW) (Silent Hill but it's a 2000's Alt Rock album | Vol. 2) (Second compilation of alt rock tracks from Silent Hill games.) (youtube music alt-rock rock game-ost) (shoegaze soundtrack)
 (http://immersivemath.com/ila/index.html) (Immersive Linear Algebra) (Interactive textbook explaining the basic and advanced concepts of linear algebra. Features interactive, playable demos and numerous examples.) (book tool math gamedev) (Vectors matrices linear mappings linear mappings eigenvalues eigenvectors gaussian elimination determinants)
+(https://valvesoftware.github.io/steam-audio/) (Steam Audio) (Immersive 3D audio solution. Realtime physical) (audio programming sdk) (ambisonics vr)
