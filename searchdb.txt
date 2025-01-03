@@ -84,3 +84,4 @@
 (https://luckypaper.co/resources/commander-map/) (Magic the Gathering Commander Map Lucky Paper) (A map of Magic The Gathering Commander Decks The map visualizes the vast format of Commander showing every deck collated by EDHREC in an algorithmically generated map Explore themes and patterns that emerge and how people build your favorite commanders) (uncategorized) (uncategorized)
 (https://luckypaper.co/resources/cube-map/) (Magic the Gathering Cube Map Lucky Paper) (A map of all the Magic the Gathering Cubes on Cube Cobra) (uncategorized) (uncategorized)
 (https://users.cs.northwestern.edu/~hunicke/MDA.pdf) (https users cs northwestern edu hunicke MDA pdf) (No description) (uncategorized) (uncategorized)
+(https://github.com/dgreenheck/OpenFracture) (GitHub dgreenheck OpenFracture Open source mesh slicing fracturing utility for Unity) (Open source mesh slicing fracturing utility for Unity dgreenheck OpenFracture) (uncategorized) (uncategorized)
