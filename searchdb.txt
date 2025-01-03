@@ -73,3 +73,4 @@
 (https://watchseriesstream.com/home) (Watch Series Stream) (Free movie and TV library. Mostly live action videos) (videos) ()
 (https://www.wcostream.tv/) (Watch Cartoon Online) (Free library of animated movies and TV shows) (videos) (anime cartoons animated)
 (https://game-icons.net/) (Game-icons.net) (Over 4000 icons for games published under the CC BY 3.0 license) (art icon gamedev creative-commons) (prototype prototyping ui ux mockup)
+(https://sims.tarac.nl/the-sims-4/sims-4-download-update-repair-add-dlcs/) (Sims 4 and DLCs) (Update, add and repair Sims 4 DLC for free) (games) (gaming expansions)
