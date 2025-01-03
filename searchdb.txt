@@ -86,3 +86,4 @@
 (https://users.cs.northwestern.edu/~hunicke/MDA.pdf) (https users cs northwestern edu hunicke MDA pdf) (No description) (uncategorized) (uncategorized)
 (https://github.com/dgreenheck/OpenFracture) (GitHub dgreenheck OpenFracture Open source mesh slicing fracturing utility for Unity) (Open source mesh slicing fracturing utility for Unity dgreenheck OpenFracture) (uncategorized) (uncategorized)
 (https://www.tasteofhome.com/recipes/snickerdoodles/) (Snickerdoodles - A Taste of Home) (Recipe to make Snickerdoodles, a spiced cookie using cream of tartar) (recipes) (baking cooking cookies)
+(https://www.connoisseurusveg.com/hot-and-sour-soup-with-bok-choy/) (Vegan Hot and Sour Soup - Conoisseurus Veg) (Recipe to make a vegan hot and sour soup using tofu, Bok Choy, mushrooms and bamboo) (cooking recipes) (fusion meal)
