@@ -71,3 +71,4 @@
 (https://app.fantasy-calendar.com/) (Fantasy Calendar Builder) (Create calendars for world building and tracking in roleplaying campaigns or other world creation) (worldbuilding) (dnd fantasy roleplaying rp)
 (https://publicdomainvectors.org/) (Public Domain Images) (Vector library for free use in creative projects) (art) (images free)
 (https://watchseriesstream.com/home) (Watch Series Stream) (Free movie and TV library. Mostly live action videos) (videos) ()
+(https://www.wcostream.tv/) (Watch Cartoon Online) (Free library of animated movies and TV shows) (videos) (anime cartoons animated)
