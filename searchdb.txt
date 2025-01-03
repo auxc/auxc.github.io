@@ -56,3 +56,4 @@
 (https://youtu.be/k7tByIgkytA?si=CVzmlnMESPbS8YtF) (Building a Nightstand that Helps me Sleep Better) (Video about building a custom nightstand with a very nice editing style.) (youtube furniture design woodworking) (makewithmiles furniture)
 (https://gamedesignframework.net/building-character-feel-in-a-first-person-game/) (Building Character Feel in a First Person Game) (Exhaustive writeup on the FPS 3Cs for FPS games.) (design gamedev  gameplay) (3c control gamepad aim reaction mapping)
 (https://kyzrati.itch.io/polybot-7) (POLYBOT-7) (POLYBOT-7 was developed as a project for the 2018 7DRL challenge, based on the source of a much bigger project, Cogmind.) (procedural gameplay game retro ascii) (rogue roguelike cogmind procedural dungeon crawler robot ascii video game)
+(https://minitokyo3d.com/) (Mini Tokyo 3D) (A real-time 3D digital map of Tokyo's public transport system. This data visualization was produced by Akihiko Kusanagi.) (Uncategorized) (Uncategorized)
