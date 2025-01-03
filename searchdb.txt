@@ -64,4 +64,4 @@
 (https://regex101.com/) (regex101: build, test, and debug regex) (Regular expression tester with syntax highlighting, explanation, cheat sheet for PHP/PCRE, Python, GO, JavaScript, Java, C#/.NET, Rust.) (tool comp-sci) (debug online)
 (https://0xbeef.co.uk/random/radio/ifcj6) (Antyradio Classic Rock) (Free online radio station from Katowice, playing classic Polish and international rock music.) (radio rock) (polskie radio)
 (https://0xbeef.co.uk/random/radio/nvopn) (Dance Wave Radio) (Dance Wave is an internet Radio station specializing in Dance category mainly Dance, House, Deep House, Trance and more electronic music.) (Dance) (catchy groovy retro 2000)
-(https://www.photopea.com/) (Photopea) (Photopea is a free online photo editing site with a full suite of tooling and links to tutorials and templates.) (Art) (photo editing image creation)
+(https://www.photopea.com/) (Photopea) (Photopea is a free online photo editing site with a full suite of tooling and links to tutorials and templates.) (art) (photo editing image creation)
