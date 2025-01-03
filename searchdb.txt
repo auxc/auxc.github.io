@@ -85,3 +85,4 @@
 (https://luckypaper.co/resources/cube-map/) (Magic the Gathering Cube Map Lucky Paper) (A map of all the Magic the Gathering Cubes on Cube Cobra) (uncategorized) (uncategorized)
 (https://users.cs.northwestern.edu/~hunicke/MDA.pdf) (https users cs northwestern edu hunicke MDA pdf) (No description) (uncategorized) (uncategorized)
 (https://github.com/dgreenheck/OpenFracture) (GitHub dgreenheck OpenFracture Open source mesh slicing fracturing utility for Unity) (Open source mesh slicing fracturing utility for Unity dgreenheck OpenFracture) (uncategorized) (uncategorized)
+(https://www.tasteofhome.com/recipes/snickerdoodles/) (Snickerdoodles - A Taste of Home) (Recipe to make Snickerdoodles, a spiced cookie using cream of tartar) (recipes) (baking cooking cookies)
