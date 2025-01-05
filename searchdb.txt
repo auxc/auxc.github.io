@@ -99,3 +99,4 @@
 (https://www.factorio.com/blog/) (Blog Factorio) (No description) (uncategorized) (uncategorized)
 (https://darknetdiaries.com/) (Darknet Diaries True stories from the dark side of the Internet) (A podcast featuring true stories from the dark side of the Internet) (uncategorized) (darknet diaries podcast darkweb dark web stories crypto hacking hackers hackable breach virus malware botnet intrusion sysadmin privacy Internet infosec security information security secops)
 (https://www.devgameclub.com/) (Dev Game Club) () (uncategorized) (uncategorized)
+(https://www.bellingcat.com/how-tos/) (Guides bellingcat) (No description) (uncategorized) (uncategorized)
