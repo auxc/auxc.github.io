@@ -130,3 +130,4 @@
 (https://jvns.ca/blog/2020/06/19/a-little-bit-of-plain-javascript-can-do-a-lot/) (A little bit of plain Javascript can do a lot) (A little bit of plain Javascript can do a lot) (uncategorized) (uncategorized)
 (https://jvns.ca/) (Julia Evans) (Julia Evans) (uncategorized) (uncategorized)
 (https://astrid.tech/) (Homepage) (No description) (uncategorized) (uncategorized)
+(https://brr.fyi/) (brr) (Observations on Antarctic infrastructure Anecdotes from daily life for support staff Focused on McMurdo Station and Amundsen Scott South Pole Station) (uncategorized) (uncategorized)
