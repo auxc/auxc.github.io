@@ -132,3 +132,4 @@
 (https://astrid.tech/) (Homepage) (No description) (uncategorized) (uncategorized)
 (https://brr.fyi/) (brr) (Observations on Antarctic infrastructure Anecdotes from daily life for support staff Focused on McMurdo Station and Amundsen Scott South Pole Station) (uncategorized) (uncategorized)
 (https://rotatingsandwiches.wordpress.com/) (Rotating Sandwiches that s it) (rotating sandwiches email rotating sandwiches inquiries gmail com) (uncategorized) (uncategorized)
+(https://www.ronja-tutorials.com/post/046-fwidth/#fwidth) (Shaders: Partial Derivatives (fwidth)) (This tutorial explores the fwidth function in shader programming. It explains how fwidth calculates the sum of partial derivatives of a function across screen space and demonstrates its practical uses in creating smooth and visually appealing gradients in shaders.) (Shader Programming) (fwidth shaders shader programming Unity partial-derivatives smoothstep effects)
