@@ -128,3 +128,4 @@
 (https://github.com/pret/pokered) (GitHub pret pokered Disassembly of Pok mon Red Blue) (Disassembly of Pok mon Red Blue Contribute to pret pokered development by creating an account on GitHub) (uncategorized) (uncategorized)
 (https://en.wikipedia.org/wiki/Shadow_library) (Shadow library Wikipedia) (No description) (uncategorized) (uncategorized)
 (https://jvns.ca/blog/2020/06/19/a-little-bit-of-plain-javascript-can-do-a-lot/) (A little bit of plain Javascript can do a lot) (A little bit of plain Javascript can do a lot) (uncategorized) (uncategorized)
+(https://jvns.ca/) (Julia Evans) (Julia Evans) (uncategorized) (uncategorized)
