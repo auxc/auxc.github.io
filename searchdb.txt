@@ -129,3 +129,4 @@
 (https://en.wikipedia.org/wiki/Shadow_library) (Shadow library Wikipedia) (No description) (uncategorized) (uncategorized)
 (https://jvns.ca/blog/2020/06/19/a-little-bit-of-plain-javascript-can-do-a-lot/) (A little bit of plain Javascript can do a lot) (A little bit of plain Javascript can do a lot) (uncategorized) (uncategorized)
 (https://jvns.ca/) (Julia Evans) (Julia Evans) (uncategorized) (uncategorized)
+(https://astrid.tech/) (Homepage) (No description) (uncategorized) (uncategorized)
