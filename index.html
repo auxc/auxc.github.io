@@ -246,7 +246,7 @@ li {
 <body onload="test()">
 <center>
 <p class = "searchContainer">
-<button class="mainDropdown" id="mainButton" onclick="resetSearch()"><span class="logo">🧬</span></button>
+<button class="mainDropdown" id="mainButton" onclick="resetSearch()"><span class="logo">🕰️</span></button>
 <span id="searchContainerId"></span>
 <input oninput="updateResults()" id = "searchInput" placeholder="type to begin"></input>
 </p>
@@ -261,7 +261,7 @@ li {
 </ul>
 
 <div id="footer">
-<small id = "output"><a href="changelog.html">v0.5</a> 🧬 <a href="index.html">cobweb</a> · curios found by auxc & friends</small>
+<small id = "output"><a href="changelog.html">v0.6</a> 🕰️ <a href="index.html">cobweb</a> · curios found by 5412177 & friends</small>
 </div>
 
 <script>
@@ -285,31 +285,46 @@ var KEYWORDS = 4;
 var HEADER_WORD_COUNT = 5;
 
 function test(){
-var input = document.getElementById('searchInput');
-input.addEventListener('keydown', onKeyDown);
+	var input = document.getElementById('searchInput');
+	input.addEventListener('keydown', onKeyDown);
+	
+	window.addEventListener('popstate', function(event) {
+		grabTagsFromURL();
+		updateResults(false);
+	});
 
-fetch(url)
-  .then(function(response) {
-    response.text().then(function(text) {
-      storedText = text;
-      done();
-    });
-  });
+	grabTagsFromURL();
+
+	fetch(url)
+	  .then(function(response) {
+		response.text().then(function(text) {
+		  storedText = text;
+		  done();
+		});
+	});
+}
+
+function grabTagsFromURL(){
+	var urlParams = new URLSearchParams(window.location.search);
+	globalTags = urlParams.get('tags') ? urlParams.get('tags').split(',') : [];
 }
 
 function done() {
   searchIndex = storedText.split('\n');
   document.getElementById('output').insertAdjacentHTML("beforeend", ` · <a class="footerLink" href="searchdb.txt">index(${searchIndex.length})</a>`);
   showAllTags();
+  
+  if(globalTags.length > 0)
+	updateResults(false);
 }
 
 function resetSearch(){
 	document.getElementById('searchInput').value = "";
 	globalTags.length = 0;
-	updateResults();
+	updateResults(true);
 }
 
-function updateResults() {
+function updateResults(shouldRecordHistory) {
   var ul = document.getElementById("results");
 
   while(ul.firstChild){
@@ -335,6 +350,7 @@ function updateResults() {
 
     var strippedTag = next.replace(":", "");
     globalTags.push(strippedTag.toLowerCase());
+	shouldRecordHistory = true;
   }
 
   var tagExpPattern = '(?=.*(?:^|\\s)' + globalTags.map(tag => tag.replace(/#/g, '\\#')).join('(?:\\s|$))(?=.*(?:^|\\s)') + '(?:\\s|$))';
@@ -466,7 +482,7 @@ function updateResults() {
   });
   
   showAllTags();
-  updateSearchPills();
+  updateSearchPills(shouldRecordHistory);
   document.getElementById('mainButton').classList.toggle("mainDropdownIdleAnim", showingAny);
 }
 
@@ -675,10 +691,7 @@ function showAllTags(){
 	allTags.forEach((value, key) => {
 		if(globalCategoryMap.size > 0 && !globalCategoryMap.has(key))
 			return;
-			
-		if(globalTags.includes(key))
-			return;
-			
+
 		if(globalCategoryMap.size > 0 && globalCategoryMap.get(key).val >= globalResults.length)
 			return;
 			
@@ -764,7 +777,7 @@ function cosinePalette(col01, a, b, c, d) {
     ];
 }
 
-function updateSearchPills(){
+function updateSearchPills(shouldRecordHistory){
 	var doc = document.getElementById("searchContainerId");
 	var toRemove = new Array();
 
@@ -772,18 +785,25 @@ function updateSearchPills(){
 		if (doc.childNodes[i].className == "tagSearchPill") {
 			doc.removeChild(doc.childNodes[i]);
 			i--;
-    }        
-}
+		}        
+	}
+	
 	globalTags.forEach((x) => {
 		var bgColor = "230, 230, 230";
 	
 		if(tagColorMap.has(x)){
 			bgColor = tagColorMap.get(x).color;
 		}
-	
+
 		var html = getSearchPillHtml(x, bgColor);
 		doc.insertAdjacentHTML("beforeend", html)
 	});
+	
+	if(shouldRecordHistory){
+		var tagString = globalTags.length > 0 ? '?tags=' + globalTags.join(',') : '';
+		[url, unused] = document.location.href.split('?');
+		window.history.pushState({}, '', url + tagString);
+	}
 }
 
 function getSearchPillHtml(tag, bgColor){
@@ -794,7 +814,7 @@ function resultOnClick(arg){
 	var searchString = document.getElementById('searchInput').value;
 	searchString = `${arg.getAttribute("href")} ${searchString}`;
     document.getElementById('searchInput').value = searchString;
-	updateResults();
+	updateResults(true);
 	return false;
 }
 
@@ -806,7 +826,7 @@ function onTagSearchPillClick(button){
 		return;
 	
 	globalTags.splice(index, 1);
-	updateResults();
+	updateResults(true);
 }
 
 function onKeyDown(event) {
@@ -823,7 +843,7 @@ function onKeyDown(event) {
     }
 	
 	if(refreshResults)
-		updateResults();
+		updateResults(true);
 }
 
 function tryGetEmbedHTML(url){
