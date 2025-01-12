@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  font-family: Roboto, sans-serif;
+  overflow-y: scroll;
+}
+
+#footer {
+   position: fixed;
+   bottom: 0;
+   width: 100%;
+   height: 20px;
+   margin: auto 0;
+   background-color: rgb(252 252 252);
+   color: rgb(0 0 0 / 0.7);
+   text-align: center;
+   font-size: medium;
+   border-top: 1px solid rgb(0 0 0 / 0.2);
+}
+
+.entryHeader {
+   background-color: rgb(252 252 252);
+   width: 80%;
+   padding-top: 5px;
+   padding-bottom: 4px;
+   padding-left: 8px;
+   margin-top: 15px;
+   margin-left: auto;
+   margin-right: auto;
+   margin-bottom: 30px;
+   font-size: medium;
+   border-top: 1px solid rgb(0 0 0 / 0.2);
+   border-bottom: 1px solid rgb(0 0 0 / 0.2);
+   filter: drop-shadow(0rem 0.35rem 0.66rem rgba(0, 0, 0, 0.08));
+}
+
+.largeText {
+   font-size: 35px;
+   margin-bottom: 8px;
+}
+
+.smallSpace {
+    height: 115px;
+}
+
+ol {
+    margin-top: 8px;
+	margin-left: -15px;
+	padding-right: 12px;
+}
+
+li{
+    margin-top: 3.5px;
+	padding-right: 12px;
+}
+
+p {
+    text-align:justify;
+	padding-right: 12px;
+}
+
+</style>
+<title>cobweb changelog</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕸️</text></svg>">
+</head>
+<body>
+
+<small><time datetime="2024-04-06">April 6<sup>th</sup>, 2024</time></small>
+<div class = "largeText">Version 0.3</div>
+<p>The first experiment with tag hierarchy. The goal is to allow a large amount of specific identifiers associated with each page, making searching and navigation problems easier to solve.</p>
+<p>Large number of tags are expected to be a challenge in two ways: to display correctly in the frontend, and to keep accurate in the backend with tag and page combinations growing rapidly in a real deployment.</p>
+<h3>Frontpage</h3>
+<ol>
+  <li>Tags can now be nested. Nested tags show up when the parent is a part of the search.</li>
+  <li>Tags added to the search are now displayed inside the input box and can removed by clicking or pressing backspace.</li>
+  <li>Added a Home button on the left side of the search input box. Currently it allows clearing the search and going back to the home page. In the future, this button will hold the options menu as a drop-down list.</li>
+</ol>
+
+<div id="footer">
+<small id = "output"><a href="index.html">cobweb</a></small>
+</div>
+</body>
+</html>
