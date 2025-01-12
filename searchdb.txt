@@ -148,3 +148,4 @@
 (https://auxc.github.io/changelog/0.4.html) (Cobweb 0.4) (Youtube links generate embeds automatically.) (cobweb changelog 5412177) (history version update video player)
 (https://auxc.github.io/changelog/0.5.html) (Cobweb 0.5) (Tags are now a flat composition rather than a nested hierarchy.) (cobweb changelog 5412177) (history version update browsing)
 (https://gordonbrander.com/pattern/provoking-emergence/) (Provoking emergence Gordon Brander) (No description) (uncategorized xaasta) (uncategorized)
+(https://www.blockbench.net/) (Blockbench) (An easy to use 3D model editor for low poly and pixel art) (uncategorized xaasta) (uncategorized)
