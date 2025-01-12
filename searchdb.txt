@@ -144,3 +144,4 @@
 (https://open.spotify.com/episode/18qdEre3OdB29OgEaOtT4i?si=e5e609d3b8dd4315) (Mitochondrial Eve, Climate Change CRISPR, and Telephone Music - Let's Learn Everything) (Learn about our most recent common ancestor, an interesting use for gene technology, and the history of telephone music) (podcasts history) (DNA climate)
 (https://auxc.github.io/changelog/0.1.html) (Cobweb 0.1) (First usable prototype) (cobweb changelog 5412177) (history version update)
 (https://auxc.github.io/changelog/0.2.html) (Cobweb 0.2) (Tag coloring and entry counts. Support for entry editing) (cobweb changelog 5412177) (history version update)
+(https://auxc.github.io/changelog/0.3.html) (Cobweb 0.3) (Nested tags and support for entering tags manually in the searchbox.) (cobweb changelog 5412177) (history version update)
