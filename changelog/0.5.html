@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  font-family: Roboto, sans-serif;
+  overflow-y: scroll;
+}
+
+#footer {
+   position: fixed;
+   bottom: 0;
+   width: 100%;
+   height: 20px;
+   margin: auto 0;
+   background-color: rgb(252 252 252);
+   color: rgb(0 0 0 / 0.7);
+   text-align: center;
+   font-size: medium;
+   border-top: 1px solid rgb(0 0 0 / 0.2);
+}
+
+.entryHeader {
+   background-color: rgb(252 252 252);
+   width: 80%;
+   padding-top: 5px;
+   padding-bottom: 4px;
+   padding-left: 8px;
+   margin-top: 15px;
+   margin-left: auto;
+   margin-right: auto;
+   margin-bottom: 30px;
+   font-size: medium;
+   border-top: 1px solid rgb(0 0 0 / 0.2);
+   border-bottom: 1px solid rgb(0 0 0 / 0.2);
+   filter: drop-shadow(0rem 0.35rem 0.66rem rgba(0, 0, 0, 0.08));
+}
+
+.largeText {
+   font-size: 35px;
+   margin-bottom: 8px;
+}
+
+.smallSpace {
+    height: 115px;
+}
+
+ol {
+    margin-top: 8px;
+	margin-left: -15px;
+	padding-right: 12px;
+}
+
+li{
+    margin-top: 3.5px;
+	padding-right: 12px;
+}
+
+p {
+    text-align:justify;
+	padding-right: 12px;
+}
+
+</style>
+<title>cobweb changelog</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕸️</text></svg>">
+</head>
+<body>
+  
+<small><time datetime="2024-04-08">April 8<sup>th</sup>, 2024</time></small>
+<div class = "largeText">Version 0.5 🧬 tagweb</div>
+<p>The first tag experiment predictably wasn't very usable. Setting up tag relations inside the contents of each index entry proved to be hard to think about and unmaintainable even at a reasonably small index size.</p>
+<p>The  approaches the hierarchy as an emergent property of the index. The solution follows two simple rules:
+<ol>
+<li>Display only the tags that are relevant to the currently ongoing search.</li>
+<li>Tag order in any UI where they are expected to be browsed defaults to sorting by the number of results a click would yield.</li>
+</ol></p>
+<p>Maintenance is still a problem to be solved, but the goal is clear when editing an entry: keep the tags and descriptions accurate without worrying about the hierarchy.</p>
+<h3>Frontpage</h3>
+<ol>
+  <li>Relevant tags are now displayed at all times below the search bar to help browse the index by mouse and narrow down the search.</li>
+  <li>Tags that would produce 0 results or no change are not shown.</li>
+</ol>
+</div>
+
+<div id="footer">
+<small id = "output"><a href="index.html">cobweb</a></small>
+</div>
+</body>
+</html>
