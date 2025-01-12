@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  font-family: Roboto, sans-serif;
+  overflow-y: scroll;
+}
+
+#footer {
+   position: fixed;
+   bottom: 0;
+   width: 100%;
+   height: 20px;
+   margin: auto 0;
+   background-color: rgb(252 252 252);
+   color: rgb(0 0 0 / 0.7);
+   text-align: center;
+   font-size: medium;
+   border-top: 1px solid rgb(0 0 0 / 0.2);
+}
+
+.entryHeader {
+   background-color: rgb(252 252 252);
+   width: 80%;
+   padding-top: 5px;
+   padding-bottom: 4px;
+   padding-left: 8px;
+   margin-top: 15px;
+   margin-left: auto;
+   margin-right: auto;
+   margin-bottom: 30px;
+   font-size: medium;
+   border-top: 1px solid rgb(0 0 0 / 0.2);
+   border-bottom: 1px solid rgb(0 0 0 / 0.2);
+   filter: drop-shadow(0rem 0.35rem 0.66rem rgba(0, 0, 0, 0.08));
+}
+
+.largeText {
+   font-size: 35px;
+   margin-bottom: 8px;
+}
+
+.smallSpace {
+    height: 115px;
+}
+
+ol {
+    margin-top: 8px;
+	margin-left: -15px;
+	padding-right: 12px;
+}
+
+li{
+    margin-top: 3.5px;
+	padding-right: 12px;
+}
+
+p {
+    text-align:justify;
+	padding-right: 12px;
+}
+
+</style>
+<title>cobweb changelog</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕸️</text></svg>">
+</head>
+<body>
+
+<div class = "entryHeader">
+<small><time datetime="2024-03-29">March 29<sup>th</sup>, 2024</time></small>
+<div class = "largeText">Version 0.1 🕸️ cobweb</div>
+
+<p>Introducing the first usable version of cobweb. The website has basic search functionality to browse the index, and a frontpage featuring all available tags.</p>
+<p>The goal of the project is to create a place where a small group of friends can share and browse interesting bits of the broader internet. Development will focus on improving link sharing, search, organization and archiving features.</p>
+<p>All the underlying tech is naive and expected to be replaced with something robust once I'm done experimenting with features.</p>
+<p>The name, <strong>cobweb</strong>, implies a path less traveled. The wooden attic of Web 3.0, filled with items some people thought were cool or useful at one point.
+
+<h3>Search</h3>
+<ol>
+  <li>Displays all items from the index that match the search terms.</li>
+  <li>Spaces between input words are treated as logical AND. If any words do not match at all, an item is not considered a search result.</li>
+  <li>Page order is based on partial match score calculated using <a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Levenshtein Distance</a>. Close matches in header and description text are valued more than ones in tags and hidden keywords.</li>
+  <li>Search can be further narrowed down by specifying tags using the following syntax: <i>tag1: tag2: tag3: (...)</i></li>
+</ol>
+<h3>Frontpage</h3>
+<ol>
+  <li>All tags present in the index are displayed as links on the frontpage when no search terms are provided.</li>
+</ol>
+<h3>Link bot</h3>
+<ol>
+  <li>Users access the bot through a private group chat.</li>
+  <li>Links and metadata are picked up from the conversation and inserted into the index.</li>
+</ol>
+  
+<div id="footer">
+<small id = "output"><a href="index.html">cobweb</a></small>
+</div>
+</body>
+</html>
