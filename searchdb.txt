@@ -147,3 +147,4 @@
 (https://auxc.github.io/changelog/0.3.html) (Cobweb 0.3) (Nested tags and support for entering tags manually in the searchbox.) (cobweb changelog 5412177) (history version update)
 (https://auxc.github.io/changelog/0.4.html) (Cobweb 0.4) (Youtube links generate embeds automatically.) (cobweb changelog 5412177) (history version update video player)
 (https://auxc.github.io/changelog/0.5.html) (Cobweb 0.5) (Tags are now a flat composition rather than a nested hierarchy.) (cobweb changelog 5412177) (history version update browsing)
+(https://gordonbrander.com/pattern/provoking-emergence/) (Provoking emergence Gordon Brander) (No description) (uncategorized xaasta) (uncategorized)
