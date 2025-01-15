@@ -170,3 +170,4 @@
 (https://lmstudio.ai/) (LM Studio Discover download and run local LLMs) (Run Llama Mistral Phi 3 locally on your computer) (uncategorized xaasta) (uncategorized)
 (https://retromash.com/2015/01/02/building-a-home-arcade-machine-part-1/) (https://retromash.com/2015/01/02/building-a-home-arcade-machine-part-1/) (No description) (uncategorized xaasta) (uncategorized)
 (https://runelite.net/) (RuneLite Open Source Old School RuneScape Client) (A popular free open source and super fast client for Old School RuneScape) (uncategorized xaasta) (uncategorized)
+(https://cpetry.github.io/NormalMap-Online/) (NormalMap Online) (Online NormalMap Generator FREE Create a Normalmap directly inside your browser No Uploads required completely client based) (uncategorized Hyperpyrean) (Normalmap Normal Mapping Online cpetry github NormalMap Generator Heightmap Javascript)
