@@ -185,3 +185,4 @@
 (https://handbrake.fr/) (HandBrake Open Source Video Transcoder) (HandBrake is an open source GPL licensed multiplatform multithreaded video transcoder) (uncategorized 5412177) (uncategorized)
 (https://costcodle.com/) (COSTCODLE) (No description) (uncategorized 5412177) (uncategorized)
 (https://www.foodguessr.com) (FoodGuessr) (Guess food from around the world) (uncategorized 5412177) (uncategorized)
+(https://worldlegame.io/?) (Worldle Game Map Wordle) (Test your knowledge in geography Worldle is a game where you have to guess the country based only on its shape) (uncategorized frogh) (worldle wordle game play country guess daily world)
