@@ -241,14 +241,11 @@ li {
 /* Dropdown bar */
 
 .modal-bar {
-  display: flex;
   align-items: center;
-  padding: 5px 10px; /* Reduced padding */
+  padding: 5px 10px;
   border-top: 1px solid rgb(0 0 0 / 0.4);
-
   width: 100%;
   box-sizing: border-box;
-
 }
 
 .dropdown {
@@ -258,37 +255,36 @@ li {
 
 .dropbtn {
   background-color: #f8f9fa;
-  padding: 4px 8px; /* Reduced padding */
-  font-size: 12px; /* Smaller font size */
+  padding: 4px 8px;
+  font-size: 12px;
   border: 1px solid #ddd;
-  border-radius: 8px; /* Slightly smaller border radius */
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s ease; /* Faster transition */
+  transition: background-color 0.2s ease;
 }
 
 .dropbtn:hover {
   background-color: #e9ecef;
 }
 
-/* Dropdown content (hidden by default) */
 .dropdown-content {
   display: none;
   position: absolute;
   background-color: #fff;
-  min-width: 120px; /* Smaller minimum width */
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Lighter shadow */
+  min-width: 120px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid #ddd;
-  border-radius: 3px; /* Slightly smaller border radius */
+  border-radius: 3px;
   z-index: 1;
 }
 
 .dropdown-content a {
   color: #333;
-  padding: 6px 8px; /* Reduced padding */
+  padding: 6px 8px;
   text-decoration: none;
   display: block;
-  font-size: 12px; /* Smaller font size */
-  transition: background-color 0.2s ease; /* Faster transition */
+  font-size: 12px;
+  transition: background-color 0.2s ease;
 }
 
 .dropdown-content a:hover {
@@ -301,13 +297,14 @@ li {
 
 .dropbtn::after {
   content: '▼';
-  font-size: 8px; /* Smaller arrow */
-  margin-left: 4px; /* Reduced margin */
+  font-size: 8px;
+  margin-left: 4px;
 }
 
 .modal-bar.hidden {
   opacity: 0;
   visibility: hidden;
+  position: absolute;
 }
 
 /* End dropdowns */
@@ -573,37 +570,42 @@ function updateResults(shouldRecordHistory) {
 	scoredArr.push(value);
   });
   
-  var mode = parseInt(sortingMode);
+  const sortByRelevance = (x, y) => y.score - x.score;
   
-  switch(mode) {
+  const sortByNewest = (x, y) => {
+    if (x.timestamp === y.timestamp) {
+      return y.score - x.score;
+    }
+    return y.timestamp - x.timestamp;
+  };
+  
+  const sortByOldest = (x, y) => {
+    if (x.timestamp === y.timestamp) {
+      return y.score - x.score;
+    }
+    return x.timestamp - y.timestamp;
+  };
+  
+  mode = parseInt(sortingMode);
+
+  switch (mode) {
     case SORTING_RELEVANCE:
-	  scoredArr.sort((x, y) => {
-		  return y.score - x.score;
-	  });
-	  break;
+      scoredArr.sort(sortByRelevance);
+      break;
+
     case SORTING_NEWEST:
-		scoredArr.sort((x, y) => {
-			if(x.timestamp == y.timestamp)
-				return y.score - x.score;
-				
-			return x.timestamp - y.timestamp;
-		});
-	  break;
+      scoredArr.sort(sortByNewest);
+      break;
+
     case SORTING_OLDEST:
-		scoredArr.sort((x, y) => {
-			if(x.timestamp == y.timestamp)
-				return y.score - x.score;
-				
-			return y.timestamp - x.timestamp;
-	  });
-	  break;
-	default:
-		console.log("uncrecognized sort mode: " + sortingMode);
-		scoredArr.sort((x, y) => {
-		  return y.score - x.score;
-		});
-	  break;
-	} 
+      scoredArr.sort(sortByOldest);
+      break;
+
+    default:
+      console.log("Unrecognized sort mode: " + mode);
+      scoredArr.sort(sortByRelevance);
+      break;
+  }
   
   var showingAny = false;
 
@@ -633,7 +635,7 @@ function updateResults(shouldRecordHistory) {
   showAllTags();
   updateSearchPills(shouldRecordHistory);
   document.getElementById('mainButton').classList.toggle("mainDropdownIdleAnim", showingAny);
-  showModalBar(globalResults.length > 0);
+  showModalBar(globalResults.length > 1);
 }
 
 //todo: 'word' is sometimes used to refer to a column, but this grabs a literal word. Do a naming pass at some point
