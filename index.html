@@ -238,6 +238,79 @@ li {
   100% {opacity: 1}
 }
 
+/* Dropdown bar */
+
+.modal-bar {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px; /* Reduced padding */
+  border-top: 1px solid rgb(0 0 0 / 0.4);
+
+  width: 100%;
+  box-sizing: border-box;
+
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropbtn {
+  background-color: #f8f9fa;
+  padding: 4px 8px; /* Reduced padding */
+  font-size: 12px; /* Smaller font size */
+  border: 1px solid #ddd;
+  border-radius: 8px; /* Slightly smaller border radius */
+  cursor: pointer;
+  transition: background-color 0.2s ease; /* Faster transition */
+}
+
+.dropbtn:hover {
+  background-color: #e9ecef;
+}
+
+/* Dropdown content (hidden by default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #fff;
+  min-width: 120px; /* Smaller minimum width */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Lighter shadow */
+  border: 1px solid #ddd;
+  border-radius: 3px; /* Slightly smaller border radius */
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: #333;
+  padding: 6px 8px; /* Reduced padding */
+  text-decoration: none;
+  display: block;
+  font-size: 12px; /* Smaller font size */
+  transition: background-color 0.2s ease; /* Faster transition */
+}
+
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropbtn::after {
+  content: '▼';
+  font-size: 8px; /* Smaller arrow */
+  margin-left: 4px; /* Reduced margin */
+}
+
+.modal-bar.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* End dropdowns */
 
 </style>
 <title>cobweb</title>
@@ -255,6 +328,16 @@ li {
 <ul id='tagBox'>
 <div id="init_loader" class="loader"></div>
 </ul>
+<div class="modal-bar hidden">
+	<div class="dropdown">
+	  <button class="dropbtn">Sort by: Relevance</button>
+	  <div class="dropdown-content">
+		<a href="#" data-sort="0">Relevance</a>
+		<a href="#" data-sort="1">Newest</a>
+		<a href="#" data-sort="2">Oldest</a>
+	  </div>
+	  </div>
+</div>
 <ul id='videoBox'>
 </ul>
 <ul id='results'>
@@ -277,12 +360,21 @@ var globalCategoryMap = new Map();
 var allTags = new Map();
 var tagColorMap = new Map();
 
+//modal bar stuff
+const SORTING_RELEVANCE = 0;
+const SORTING_NEWEST = 1;
+const SORTING_OLDEST = 2;
+
+var sortingMode = SORTING_RELEVANCE;
+
+//data format
 var URL = 0;
 var NAME = 1;
 var DESCRIPTION = 2;
 var CATEGORY = 3;
 var KEYWORDS = 4;
-var HEADER_WORD_COUNT = 5;
+var TIMESTAMP = 5;
+var HEADER_WORD_COUNT = 6;
 
 function test(){
 	var input = document.getElementById('searchInput');
@@ -292,7 +384,8 @@ function test(){
 		grabTagsFromURL();
 		updateResults(false);
 	});
-
+	
+	initModalBar();
 	grabTagsFromURL();
 
 	fetch(url)
@@ -302,6 +395,29 @@ function test(){
 		  done();
 		});
 	});
+}
+
+function initModalBar(){
+    var dropbtn = document.querySelector('.dropbtn');
+    var dropdownContent = document.querySelector('.dropdown-content');
+
+    dropdownContent.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A') {	
+	    e.preventDefault();
+        sortingMode = e.target.getAttribute('data-sort');
+        dropbtn.textContent = `Sort by: ${e.target.textContent}`;
+		updateResults(false);
+      }
+    });
+}
+
+function showModalBar(show){
+	var modalBar = document.querySelector('.modal-bar');
+	
+	if(show)
+		modalBar.classList.remove('hidden');
+	else
+		modalBar.classList.add('hidden');
 }
 
 function grabTagsFromURL(){
@@ -378,6 +494,10 @@ function updateResults(shouldRecordHistory) {
   searchIndex.forEach((entry) => {
 	  var matches = [];
 
+	 //todo check the empty entry that shows up here sometimes
+	 if(entry.length == 0)
+		return;
+
 	  entry.replace(filterExp, function() {
 		  matches.push(Array.prototype.slice.call(arguments, 1).filter(Boolean)); //todo: unvoodoo
 	  });
@@ -432,6 +552,7 @@ function updateResults(shouldRecordHistory) {
 			wordIndex: wordIndex,
 			totalMatches: 1,
 			line: match[2],
+			timestamp: getNthBracketedItem(match[2], TIMESTAMP)
 		};
 		
 		if(scoredMatches.has(match[2])){
@@ -452,10 +573,38 @@ function updateResults(shouldRecordHistory) {
 	scoredArr.push(value);
   });
   
-  scoredArr.sort((x, y) => {
-		return y.score - x.score;
-  });
-
+  var mode = parseInt(sortingMode);
+  
+  switch(mode) {
+    case SORTING_RELEVANCE:
+	  scoredArr.sort((x, y) => {
+		  return y.score - x.score;
+	  });
+	  break;
+    case SORTING_NEWEST:
+		scoredArr.sort((x, y) => {
+			if(x.timestamp == y.timestamp)
+				return y.score - x.score;
+				
+			return x.timestamp - y.timestamp;
+		});
+	  break;
+    case SORTING_OLDEST:
+		scoredArr.sort((x, y) => {
+			if(x.timestamp == y.timestamp)
+				return y.score - x.score;
+				
+			return y.timestamp - x.timestamp;
+	  });
+	  break;
+	default:
+		console.log("uncrecognized sort mode: " + sortingMode);
+		scoredArr.sort((x, y) => {
+		  return y.score - x.score;
+		});
+	  break;
+	} 
+  
   var showingAny = false;
 
   scoredArr.forEach((scoredMatch) => {
@@ -484,8 +633,10 @@ function updateResults(shouldRecordHistory) {
   showAllTags();
   updateSearchPills(shouldRecordHistory);
   document.getElementById('mainButton').classList.toggle("mainDropdownIdleAnim", showingAny);
+  showModalBar(globalResults.length > 0);
 }
 
+//todo: 'word' is sometimes used to refer to a column, but this grabs a literal word. Do a naming pass at some point
 function getWordAtIndex(str, index) {
 	if(!str)
 		return "";
@@ -506,6 +657,17 @@ function getWordAtIndex(str, index) {
     }
 
     return currentWord;
+}
+
+function getNthBracketedItem(str, index) {
+  var matches = str.match(/\(([^)]+)\)/g);
+
+  if (!matches || index < 0 || index >= matches.length) {
+    return null;
+  }
+
+  const nthItem = matches[index].slice(1, -1);
+  return nthItem;
 }
 
 //https://stackoverflow.com/questions/18516942/fastest-general-purpose-levenshtein-javascript-implementation
@@ -607,7 +769,7 @@ function getLevenshteinDistance(s, t) {
 }
 
 function getResultString(rawResult, outCategories){
-  var url, name, description, category;
+  var url, name, description, category, timestamp;
   var resultWords = rawResult.match(splitWordsExp);
 
   if(!resultWords)
@@ -615,7 +777,7 @@ function getResultString(rawResult, outCategories){
 
   for (var i = 0; i < HEADER_WORD_COUNT; i++) { 
     var word = stripParentheses(resultWords[i], ['(', ')']);
-    
+	
     switch (i) {
       case URL:
         url = word;
@@ -638,6 +800,10 @@ function getResultString(rawResult, outCategories){
         break;
       case KEYWORDS:
         break;
+	  case TIMESTAMP:
+		var unixTime = parseInt(word);
+		var options = { dateStyle: 'medium' };
+		timestamp = new Date(unixTime * 1000).toLocaleString(undefined, options);
     }
   }
   
@@ -650,7 +816,7 @@ function getResultString(rawResult, outCategories){
 	extraContentHtml = `<div class="extraResultContent" id="${embedInfo.id}"></div>`;
    }
   
-  var result = `<b><a href='${url}'>${name}</a> ${extraButtonHtml}</b></br><small><sup>${category} · ${url}</sup></small></br class='smallSpace'/>${description}${extraContentHtml}`;
+  var result = `<b><a href='${url}'>${name}</a> ${extraButtonHtml}</b></br><small><sup>${category} · ${timestamp} · ${url}</sup></small></br class='smallSpace'/>${description}${extraContentHtml}`;
   return result;
 }
 
