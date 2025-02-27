@@ -248,6 +248,10 @@ li {
   box-sizing: border-box;
 }
 
+.modal-bar.hidden {
+	display:none;
+}
+
 .dropdown {
   position: relative;
   display: inline-block;
@@ -319,7 +323,7 @@ li {
 <p class = "searchContainer">
 <button class="mainDropdown" id="mainButton" onclick="resetSearch()"><span class="logo">🕰️</span></button>
 <span id="searchContainerId"></span>
-<input oninput="updateResults()" id = "searchInput" placeholder="type to begin"></input>
+<input oninput="updateResults(false)" id = "searchInput" placeholder="type to begin"></input>
 </p>
 </center>
 <hr id="divider" />
@@ -610,6 +614,8 @@ function updateResults(shouldRecordHistory) {
   
   var showingAny = false;
 
+  var liHTML = "";
+
   scoredArr.forEach((scoredMatch) => {
     if(!scoredMatch)
       return;
@@ -625,13 +631,13 @@ function updateResults(shouldRecordHistory) {
 
     if(htmlResult.length == 0)
       return;
-      
-    var li = document.createElement("li");
-    li.insertAdjacentHTML("beforeend", htmlResult);
-    ul.appendChild(li);
+
+	liHTML += htmlResult;
 	showingAny = true;
 	globalResults.push(scoredMatch);
   });
+  
+  ul.insertAdjacentHTML('beforeEnd', liHTML);
   
   showAllTags();
   updateSearchPills(shouldRecordHistory);
@@ -819,7 +825,7 @@ function getResultString(rawResult, outCategories){
 	extraContentHtml = `<div class="extraResultContent" id="${embedInfo.id}"></div>`;
    }
   
-  var result = `<b><a href='${url}'>${name}</a> ${extraButtonHtml}</b></br><small><sup>${category} · ${timestamp} · ${url}</sup></small></br class='smallSpace'/>${description}${extraContentHtml}`;
+  var result = `<li><b><a href='${url}'>${name}</a> ${extraButtonHtml}</b></br><small><sup>${category} · ${timestamp} · ${url}</sup></small></br class='smallSpace'/>${description}${extraContentHtml}</li>`;
   return result;
 }
 
