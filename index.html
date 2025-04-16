@@ -451,12 +451,22 @@ function test(){
 	
 	initModalBar();
 	grabTagsFromURL();
+	
+	storedText = localStorage.getItem('cacheddb');
+
+	if(storedText)
+		done();
 
 	fetch(url)
 	  .then(function(response) {
 		response.text().then(function(text) {
+		
+		  if(storedText === text)
+			return;
+		
 		  storedText = text;
 		  done();
+		  localStorage.setItem('cacheddb', text);
 		});
 	});
 }
