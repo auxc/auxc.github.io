@@ -564,21 +564,43 @@ function updateResults(shouldRecordHistory) {
   }
 
   var searchSansTags = filterStrings.join(" ");
-  var escapedSearch = searchSansTags.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  var filterExp = new RegExp(`(${escapedSearch})`, 'ig');
+  var tokens = [];
+  var singleWordsOrQuotedStrings = /"([^"]+)"|\S+/g;
+  var match;
+  while ((match = singleWordsOrQuotedStrings.exec(searchSansTags)) !== null) {
+    tokens.push(match[1] || match[0]); // match[1] - quoted phrase, match[0] - word
+  }
+
+  var escapedWords = tokens
+    .map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .filter(w => w.length > 0);
+  var filterExp = new RegExp(`(${escapedWords.join('|')})`, 'ig');
   var scoredMatches = new Map();
   
+  let matchTracker = new Set();
+  
   searchIndex.forEach((entry) => {
+	  if(entry.length == 0)
+		return;
+	  
 	  var matches = [];
 
-	 //todo check the empty entry that shows up here sometimes
-	 if(entry.length == 0)
-		return;
-
-	  entry.replace(filterExp, function() {
-		  matches.push(Array.prototype.slice.call(arguments, 1).filter(Boolean)); //todo: unvoodoo
+	  entry.replace(filterExp, function(matchedWord) {
+		matches.push(Array.prototype.slice.call(arguments, 1).filter(Boolean));
+		matchTracker.add(matchedWord.toLowerCase());
 	  });
-	  
+
+	  const entryLower = entry.toLowerCase();
+	  let matchedTokenCount = 0;
+
+	  //count unique search term matches
+	  for (const token of tokens) {
+	    const tokenLower = token.toLowerCase();
+	    if (entryLower.includes(tokenLower)) {
+		  matchedTokenCount++;
+	    }
+	  }
+
 	  matches.forEach((match) => {
 		var input = match[0];
 		
@@ -620,7 +642,10 @@ function updateResults(shouldRecordHistory) {
 			break;
 		}
 		
-		var score = -getLevenshteinDistance(input, output) * penaltyMultiplier - flatPenalty;
+		var tokenMatchCountScore = matchedTokenCount > 1 ? matchedTokenCount * 1000 : 0;
+		var score = -getLevenshteinDistance(input, output) * penaltyMultiplier - flatPenalty + tokenMatchCountScore;
+		
+		console.log(score + " " + entry);
 		
 		var scoredMatch = {
 			searchTerm: input,
