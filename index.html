@@ -51,7 +51,7 @@ li {
 
 #searchInput {
   flex-grow: 1;
-  height= 100px;
+  height: 100px;
 
   border: 1px solid rgb(0 0 0 / 0.5);
   border-left: 0rem solid green; 
@@ -399,7 +399,8 @@ var DESCRIPTION = 2;
 var CATEGORY = 3;
 var KEYWORDS = 4;
 var TIMESTAMP = 5;
-var HEADER_WORD_COUNT = 6;
+var ARCHIVE_URL = 6;
+var HEADER_WORD_COUNT = 7;
 
 var tagBox = document.getElementById("tagBox");
 var mainContent = document.querySelector(".main-content");
@@ -639,6 +640,9 @@ function updateResults(shouldRecordHistory) {
 		  case KEYWORDS:
 			penaltyMultiplier = 100;
 			flatPenalty = 1;
+			break;
+		  case ARCHIVE_URL:
+			penaltyMultiplier = 100;
 			break;
 		}
 		
@@ -882,7 +886,7 @@ function getLevenshteinDistance(s, t) {
 }
 
 function getResultString(rawResult, outCategories){
-  var url, name, description, category, timestamp;
+  var url, name, description, category, timestamp, archiveUrl;
   var resultWords = rawResult.match(splitWordsExp);
 
   if(!resultWords)
@@ -917,6 +921,10 @@ function getResultString(rawResult, outCategories){
 		var unixTime = parseInt(word);
 		var options = { dateStyle: 'medium' };
 		timestamp = new Date(unixTime * 1000).toLocaleString(undefined, options);
+        break;
+      case ARCHIVE_URL:
+        archiveUrl = word;
+        break;
     }
   }
   
@@ -929,7 +937,13 @@ function getResultString(rawResult, outCategories){
 	extraContentHtml = `<div class="extraResultContent" id="${embedInfo.id}"></div>`;
    }
   
-  var result = `<li><b><a href='${url}'>${name}</a> ${extraButtonHtml}</b></br><small><sup>${category} · ${timestamp} · ${url}</sup></small></br class='smallSpace'/>${description}${extraContentHtml}</li>`;
+  var archiveLinkHtml = "";
+  if(archiveUrl && archiveUrl !== "MISSING_ARCHIVE_LINK" && archiveUrl !== "SITE_NOT_ARCHIVABLE" && 
+     (archiveUrl.startsWith("http://") || archiveUrl.startsWith("https://"))) {
+    archiveLinkHtml = ` · <a href='${archiveUrl}'>archive</a>`;
+  }
+  
+  var result = `<li><b><a href='${url}'>${name}</a> ${extraButtonHtml}</b></br><small><sup>${category} · ${timestamp} · ${url} · ${archiveLinkHtml}</sup></small></br class='smallSpace'/>${description}${extraContentHtml}</li>`;
   return result;
 }
 
@@ -1187,4 +1201,4 @@ function getSingleVideoHtml(videoId){
 
 </script>
 </body>
-</html>
+</html> 
