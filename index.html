@@ -939,10 +939,10 @@ function getResultString(rawResult, outCategories){
   var archiveLinkHtml = "";
   if(archiveUrl && archiveUrl !== "MISSING_ARCHIVE_LINK" && archiveUrl !== "SITE_NOT_ARCHIVABLE" && 
      (archiveUrl.startsWith("http://") || archiveUrl.startsWith("https://"))) {
-    archiveLinkHtml = `<a href='${archiveUrl}'>archive</a>`;
+    archiveLinkHtml = ` · <a href='${archiveUrl}'>archive</a>`;
   }
   
-  var result = `<li><b><a href='${url}'>${name}</a> ${extraButtonHtml}</b></br><small><sup>${category} · ${timestamp} · ${archiveLinkHtml} · ${url}</sup></small></br class='smallSpace'/>${description}${extraContentHtml}</li>`;
+  var result = `<li><b><a href='${url}'>${name}</a> ${extraButtonHtml}</b></br><small><sup>${category} · ${timestamp}${archiveLinkHtml} · ${url}</sup></small></br class='smallSpace'/>${description}${extraContentHtml}</li>`;
   return result;
 }
 
@@ -1201,5 +1201,6 @@ function getSingleVideoHtml(videoId){
 </script>
 </body>
 </html> 
+
 
 
