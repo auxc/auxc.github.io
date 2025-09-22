@@ -1,0 +1,381 @@
+/* -------------------- Journal look: dark-blue background + textured leather cover + parchment page -------------------- */
+
+:root {
+  color-scheme: light;
+
+  /* palette */
+  --ink: #2a1a10;           /* dark brown text */
+  --link: #7a3d00;          /* sepia link */
+  --paper: #f7f1dc;         /* parchment */
+  --paper-edge: #e8ddb4;    /* page border edge */
+  --rule: rgba(0,0,0,.10);
+  --code-bg: #fff8e1;
+
+  /* leather cover colors */
+  --cover-1: #4b2f1f;       /* warm brown */
+  --cover-2: #3b2316;       /* deep leather */
+}
+
+/* Full page background: simple dark-bluish gradient */
+html, body { height: 100%; }
+body{
+  margin: 0;
+  padding: 48px 22px 68px;
+  font-family: "Times New Roman", serif;
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 800px at 20% -10%, rgba(255,255,255,.05), transparent 55%),
+    radial-gradient(1200px 800px at 120% 110%, rgba(255,255,255,.04), transparent 55%),
+    linear-gradient(180deg, #0b1220, #0e1830);
+}
+
+/* The parchment page */
+main{
+  position: relative;
+  max-width: 920px;
+  margin: 0 auto;
+  background: var(--paper);
+  border: 1px solid var(--paper-edge);
+  border-radius: 14px;
+  padding: 32px 30px 88px;
+
+  /* Parchment grain */
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0 1px, rgba(255,255,255,.02) 1px 2px),
+    radial-gradient(1200px 800px at 50% -20%, rgba(0,0,0,.06), transparent 65%);
+  background-blend-mode: multiply, normal;
+
+  /* Lift + subtle inner page highlights */
+  box-shadow:
+    0 6px 60px rgba(0,0,0,.25),                  /* drop shadow to lift off blue bg */
+    inset 0 2px 0 rgba(255,255,255,.65),          /* delicate page highlight */
+    inset 0 0 0 1px rgba(255,255,255,.35);        /* crisp parchment edge */
+}
+
+/* Textured leather “cover” behind the page (frames the parchment cleanly) */
+main::before{
+  content: "";
+  position: absolute;
+  z-index: -1;                                     /* behind the page */
+  top: -14px; right: -14px; bottom: -18px; left: -14px;
+  border-radius: 22px;
+
+  /* Organic leather texture:
+     - two tileable SVG noise layers (different scale/seed) to avoid repetition
+     - faint vertical line grain
+     - gentle diagonal sheen
+     - base leather gradient
+  */
+  background:
+    /* fine SVG noise (lighter lift) */
+    url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'>\
+  <filter id='n'>\
+    <feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' seed='7' stitchTiles='stitch'/>\
+    <feColorMatrix type='saturate' values='0'/>\
+    <feComponentTransfer>\
+      <feFuncA type='table' tableValues='0 0.3 0.20 0.15'/>\
+    </feComponentTransfer>\
+  </filter>\
+  <rect width='100%' height='100%' filter='url(%23n)'/>\
+</svg>") 0 0/220px 220px,
+
+    /* coarse SVG noise (darker speckle) */
+    url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='360' height='360' viewBox='0 0 360 360'>\
+  <filter id='n'>\
+    <feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='19' stitchTiles='stitch'/>\
+    <feColorMatrix type='saturate' values='0'/>\
+    <feComponentTransfer>\
+      <feFuncA type='table' tableValues='0 0.085 0.1 0.10'/>\
+    </feComponentTransfer>\
+  </filter>\
+  <rect width='100%' height='100%' filter='url(%23n)'/>\
+</svg>") 0 0/360px 360px,
+
+    /* faint vertical line grain */
+    repeating-linear-gradient(90deg, rgba(255,255,255,.02) 0 1px, transparent 1px 3px),
+
+    /* gentle diagonal sheen */
+    linear-gradient(160deg, rgba(255,255,255,.065), transparent 45%),
+
+    /* base leather gradient */
+    linear-gradient(160deg, var(--cover-1), var(--cover-2));
+
+  /* Blend: fine noise lifts (soft-light), coarse noise darkens (multiply),
+     line grain darkens slightly, sheen softens, base normal */
+  background-blend-mode:
+    soft-light,
+    multiply,
+    multiply,
+    soft-light,
+    normal;
+
+  /* depth + subtle rim light */
+  box-shadow:
+    0 28px 60px rgba(0,0,0,.45),                   /* cover drop shadow */
+    0 0 0 1px rgba(255,255,255,.12),               /* outer rim light */
+    inset 0 1px 0 rgba(255,255,255,.10),           /* inner top edge kiss light */
+    inset 0 -1px 0 rgba(0,0,0,.12);                /* inner bottom falloff */
+}
+
+/* Soft inner vignette over the parchment for depth */
+main::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  box-shadow: inset 0 0 60px rgba(0,0,0,.06);
+  pointer-events: none;
+}
+
+/* -------------------- Typography -------------------- */
+
+a{ color: var(--link); text-decoration: none; }
+a:hover{ text-decoration: underline; }
+
+p{ margin: 10px 0 12px; }
+
+h1, h2, h3{
+  margin: 0.65em 0 0.45em;
+  line-height: 1.15;
+  font-weight: 700;
+  font-family: "Georgia", serif;
+}
+h1{ font-size: 2.05rem; }
+h2{ font-size: 1.45rem; font-weight: 700; margin: 1.2em 0 0.45em;}
+h3{ font-size: 1.15rem; font-weight: 700; }
+
+/* Blockquote */
+blockquote{
+  margin: 0.9em 0;
+  padding: 0.35em 0.9em;
+  border-left: 4px solid #8a6a50;
+  color: #5a4636;
+  background: linear-gradient(to bottom, rgba(138,106,80,.08), rgba(138,106,80,.03));
+  border-radius: 6px;
+}
+
+/* Code */
+pre{
+  background: var(--code-bg);
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 8px;
+  padding: 10px 12px;
+  overflow: auto;
+  white-space: pre-wrap;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  color: #3b2f25;
+}
+code{
+  background: var(--code-bg);
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  color: #3b2f25;
+}
+
+/* Lists */
+ol{ margin: 10px 0 12px; padding-left: 1.35em; }
+li{ margin: 4px 0; }
+
+/* Horizontal rule (if used) */
+hr{
+  border: none; height: 1px;
+  background: var(--rule);
+  margin: 22px 0;
+}
+
+/* -------------------- Backlink “bookmarks” -------------------- */
+footer.backlinks.bookmarks{
+  position: absolute;
+  left: 24px;
+  bottom: -45.5px;                 /* hangs below the page edge */
+  margin: 0;
+  z-index: 0;                    /* below main::after shadow (which is z:2) */
+}
+footer.backlinks.bookmarks .bm-list{
+  list-style: none;
+  padding: 0; margin: 0;
+  display: flex; flex-wrap: wrap; gap: 10px;
+}
+
+/* Each bookmark tab */
+footer.backlinks.bookmarks .bookmark{
+  --bm: #d6b37a;                 /* default base (overridden by palette classes) */
+  --bm-ink: #2c1f12;
+
+  position: relative;
+  border-radius: 0 0 10px 10px;  /* rounded bottoms like paper tabs */
+  background:
+    /* faint paper grain */
+    repeating-linear-gradient(0deg, rgba(255,255,255,.06) 0 1px, rgba(0,0,0,.03) 1px 2px),
+    /* gentle top-to-bottom shade */
+    linear-gradient(to bottom, rgba(255,255,255,.25), rgba(0,0,0,.08)),
+    /* base color */
+    var(--bm);
+  background-blend-mode: soft-light, multiply, normal;
+  transform: translateZ(0);                   /* avoid subpixel fuzz on some renderers */
+  transition: transform .08s ease, box-shadow .08s ease;
+}
+
+footer.backlinks.bookmarks .bookmark > a{
+  display: block;
+  padding: 10px 14px 12px 14px;  /* room for stitch line */
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: .2px;
+  text-decoration: none;
+  color: var(--bm-ink);
+  text-shadow: 0 .5px 0 rgba(255,255,255,.4);
+}
+
+footer.backlinks.bookmarks .bookmark::before{
+  content:""; position:absolute; inset:0; border-radius:0 0 10px 10px; pointer-events:none;
+  box-shadow: inset 0 10px 12px -11px rgba(0,0,0,.63);
+}
+
+/* Stitched edge (left/right/bottom only) */
+footer.backlinks.bookmarks .bookmark{
+  position: relative; /* required for ::after */
+}
+
+/* dashed “stitch” around sides/bottom */
+footer.backlinks.bookmarks .bookmark::after{
+  content: "";
+  position: absolute;
+  left: 1px; right: 1px; bottom: 1px; top: 1px;
+  pointer-events: none;
+  border-left: 1px dashed rgba(0,0,0,.20);
+  border-right: 1px dashed rgba(0,0,0,.20);
+  border-bottom: 1px dashed rgba(0,0,0,.20);
+  border-top: none;                             /* no stitch on top */
+  border-radius: 0 0 10px 10px;                 /* match tab corners */
+  /* a tiny emboss so the stitches feel printed on paper */
+  box-shadow:
+    inset 1px 0 0 rgba(255,255,255,.25),
+    inset -1px 0 0 rgba(255,255,255,.25),
+    inset 0 -1px 0 rgba(255,255,255,.25);
+}
+
+/* -------------------- Separator -------------------- */
+
+hr.full-sep{
+  display: block;
+  border: 0;
+  height: 1px;
+  margin: 22px 0;
+  width: 100%;
+  background: var(--ink, currentColor);
+  opacity: .1; 
+}
+
+h2 + hr.full-sep{
+  margin: 8px 0 12px;
+}
+
+/* -------------------- Page meta (top right) -------------------- */
+.page-meta{
+  position: absolute;
+  right: 30px;
+  bottom: 12px;          /* was top: 10px */
+  top: auto;             /* ensure top is unset */
+  z-index: 3;
+  font-size: 0.8rem;
+  opacity: .5;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;  /* don’t block text selection underneath */
+}
+
+/* -------------------- Annotations -------------------- */
+.fn-wrap{
+  display:inline-block;
+  position:relative;
+  width:0.85em;
+  height:0;
+  line-height:0;
+  vertical-align:baseline;
+}
+.fn-ref{
+  position:absolute;
+  left:0px;
+  top:-13px; 
+  font-size:.72em;
+  line-height:1;
+  color: var(--link);         /* ← use your site link color */
+  text-decoration:none;
+  opacity:.9;
+  display:inline-block;
+}
+.fn-ref:hover,
+.fn-ref:focus{
+  opacity:1;
+  text-decoration:underline;
+}
+
+/* Footnotes block at the end */
+.footnotes{
+  margin-top: 1rem;
+  font-size: .9rem;            /* slightly smaller than body */
+}
+.footnotes > ol{
+  margin: .5rem 0 0;
+  padding-left: 1.25rem;
+}
+.footnotes li{
+  margin: .25rem 0;
+  line-height: 0.95;
+}
+
+/* Backlink caret (^) before each note */
+.footnotes .fn-back{
+  text-decoration: none;
+  font-weight: 600;
+  opacity: .7;
+}
+.footnotes .fn-back:hover,
+.footnotes .fn-back:focus{
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* flash highlight only while it becomes the :target */
+[id^="ref"]:target, [id^="fn"]:target {
+  animation: target-flash 1.6s ease-in 1;
+}
+
+@keyframes target-flash {
+  0%   { box-shadow: 0 0 0 9999px rgba(255,255,100,.25) inset; }
+  100% { box-shadow: 0 0 0 9999px rgba(255,230,150,0) inset; }
+}
+
+/* accessibility */
+@media (prefers-reduced-motion: reduce) {
+  [id^="ref"]:target, [id^="fn"]:target { animation: none; }
+
+/* ---- Palette (muted, complementary to parchment/leather) ----
+   Apply one of these to each <li class="bookmark ..."> the exporter emits.
+*/
+.bm-terracotta{ --bm:#d58a61; --bm-ink:#2c1f12; }
+.bm-ochre    { --bm:#e0c070; --bm-ink:#2c1f12; }
+.bm-sage     { --bm:#b7c79a; --bm-ink:#20301f; }
+.bm-teal     { --bm:#9ecfc7; --bm-ink:#203031; }
+.bm-sky      { --bm:#a9c6f1; --bm-ink:#1c2436; }
+.bm-indigo   { --bm:#9aa7d9; --bm-ink:#1c1f33; }
+.bm-plum     { --bm:#c2a3d9; --bm-ink:#2a1c36; }
+
+/* Small screens */
+@media (max-width: 640px){
+  .page-meta{ right: 10px; bottom: 10px; font-size: .85rem; }
+}
+
+/* -------------------- Responsive tweaks -------------------- */
+@media (max-width: 640px){
+  body{ padding: 28px 12px 48px; }
+  main{ padding: 22px 18px 72px; }
+  footer.backlinks.bookmarks{ left: 16px; bottom: -38px; }
+  footer.backlinks.bookmarks .bookmark > a{ font-size: .95rem; padding: 7px 12px 9px; }
+}
