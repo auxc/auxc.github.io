@@ -365,7 +365,7 @@ li {
         <span class="logo">🕰️</span>
       </button>
       <span id="searchContainerId"></span>
-      <input oninput="updateResults(false)" id="searchInput" placeholder="type to begin">
+      <input oninput="updateResults(false, true)" id="searchInput" placeholder="type to begin">
     </p>
   </center>
 <small id = "output"><a href="changelog.html">v0.6</a> 🕰️ <a href="index.html">cobweb</a> · curios found by 5412177 & friends</small>
@@ -383,6 +383,8 @@ var globalResults = new Array();
 var globalCategoryMap = new Map();
 var allTags = new Map();
 var tagColorMap = new Map();
+
+var updateSearchTextHistoryTimer = null;
 
 //modal bar stuff
 const SORTING_RELEVANCE = 0;
@@ -446,11 +448,13 @@ function test(){
 	
 	window.addEventListener('popstate', function(event) {
 		grabTagsFromURL();
+		grabSearchFromURL();
 		updateResults(false);
 	});
 	
 	initModalBar();
 	grabTagsFromURL();
+	grabSearchFromURL();
 	
 	storedText = localStorage.getItem('cacheddb');
 
@@ -494,20 +498,57 @@ function showModalBar(show){
 		modalBar.classList.add('hidden');
 }
 
+//example usage:
+//setURLParams({ tags: globalTags }, { push: true }); 
+function setURLParams(newParams, { push = true, arraySep = ',' } = {}) {
+  const sp = new URLSearchParams(window.location.search);
+
+  for (const [k, v] of Object.entries(newParams)) {
+    if (v === null || v === undefined || v === '') {
+      sp.delete(k);
+    } else if (Array.isArray(v)) {
+      if (v.length === 0) sp.delete(k);
+      else sp.set(k, v.join(arraySep));
+    } else {
+      sp.set(k, String(v));
+    }
+  }
+
+  const qs   = sp.toString();
+  const base = (window.location.origin || (window.location.protocol + '//' + window.location.host)) + window.location.pathname;
+  const hash = window.location.hash || '';
+  const url  = qs ? `${base}?${qs}${hash}` : `${base}${hash}`;
+
+  window.history[push ? 'pushState' : 'replaceState']({}, '', url);
+}
+
+//example usage: 
+//const q = getURLParam('q'); 
+//const tags = getURLParam('tags', { asArray: true });
+function getURLParam(name, { asArray = false, delimiter = ',' } = {}) {
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get(name);
+  if (raw === null) return asArray ? [] : null;
+  return asArray ? raw.split(delimiter).filter(s => s.length) : raw;
+}
+
 function grabTagsFromURL(){
 	var urlParams = new URLSearchParams(window.location.search);
-	globalTags = urlParams.get('tags') ? urlParams.get('tags').split(',') : [];
+	globalTags = globalTags = getURLParam('tags', { asArray: true });
+}
+
+function grabSearchFromURL() {
+  var inputEl = document.getElementById('searchInput');
+  const sp = new URLSearchParams(window.location.search);
+  let q = sp.get('q');
+  inputEl.value = q ?? '';
 }
 
 function done() {
   searchIndex = storedText.split('\n');
   document.getElementById('output').insertAdjacentHTML("beforeend", ` · <a class="footerLink" href="searchdb.txt">index(${searchIndex.length})</a>`);
   showAllTags();
-  
-  if(globalTags.length > 0)
-	updateResults(false);
-  else
-	updateResults(false, true);
+  updateResults(false);
 }
 
 function resetSearch(){
@@ -516,7 +557,7 @@ function resetSearch(){
 	updateResults(true);
 }
 
-function updateResults(shouldRecordHistory) {
+function updateResults(shouldRecordHistory, updateFromSearchInput = false) {
   var ul = document.getElementById("results");
 
   while(ul.firstChild){
@@ -648,8 +689,6 @@ function updateResults(shouldRecordHistory) {
 		var tokenMatchCountScore = matchedTokenCount > 1 ? matchedTokenCount * 1000 : 0;
 		var score = -getLevenshteinDistance(input, output) * penaltyMultiplier - flatPenalty + tokenMatchCountScore;
 		
-		console.log(score + " " + entry);
-		
 		var scoredMatch = {
 			searchTerm: input,
 			match: output,
@@ -744,12 +783,24 @@ function updateResults(shouldRecordHistory) {
   
   showAllTags();
   updateSearchPills(shouldRecordHistory);
+  
+  if(updateFromSearchInput){
+	recordSearchTextDeferred(searchTextToDisplay);
+  }
+  
   document.getElementById('mainButton').classList.toggle("mainDropdownIdleAnim", showingAny);
   showModalBar(globalResults.length > 1 && !forceNewest);
   
   var isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   if(!isMobile)
 	inputElement.focus();
+	
+  function recordSearchTextDeferred(q){
+    clearTimeout(updateSearchTextHistoryTimer);
+	updateSearchTextHistoryTimer = setTimeout(() => {
+	    setURLParams({ q: searchTextToDisplay }, { push: true });
+	}, 500);
+  }
 }
 
 //todo: 'word' is sometimes used to refer to a column, but this grabs a literal word. Do a naming pass at some point
@@ -1092,9 +1143,7 @@ function updateSearchPills(shouldRecordHistory){
 	});
 	
 	if(shouldRecordHistory){
-		var tagString = globalTags.length > 0 ? '?tags=' + globalTags.join(',') : '';
-		[url, unused] = document.location.href.split('?');
-		window.history.pushState({}, '', url + tagString);
+		setURLParams({ tags: globalTags }, { push: true });
 	}
 }
 
@@ -1200,7 +1249,7 @@ function getSingleVideoHtml(videoId){
 
 </script>
 </body>
-</html> 
+</html>
 
 
 
