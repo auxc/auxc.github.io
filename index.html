@@ -1183,6 +1183,16 @@ function onKeyDown(event) {
 		}
     }
 	
+	if (key === "Enter" && event.ctrlKey) {
+		var rawInput = document.getElementById('searchInput').value;
+		
+		if(rawInput.length > 0){
+				const url = "https://www.google.com/search?q=" + encodeURIComponent(rawInput);
+				window.location.href = url;
+		}
+		
+	}
+	
 	if(refreshResults)
 		updateResults(true);
 }
@@ -1250,7 +1260,3 @@ function getSingleVideoHtml(videoId){
 </script>
 </body>
 </html>
-
-
-
-
