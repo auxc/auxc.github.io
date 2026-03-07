@@ -3,181 +3,255 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
 <style>
+html {
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
 body {
   font-family: Roboto, sans-serif;
   overflow-y: scroll;
+  margin: 0;
+  background: #f6f7f8;
+  color: rgb(0 0 0 / 0.88);
 }
 
-li:nth-child(even) { background: rgb(0 0 0 / 0.005)}
+li:nth-child(even) {
+  background: rgb(0 0 0 / 0.005);
+}
 
 li {
   margin-bottom: 15px;
 }
 
-#results {
-  list-style-type:none;
-  padding-left: 0;
-  margin-left: 1%;
-  margin-right: 1%;
+#appHeader {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: linear-gradient(180deg, rgb(252 252 252 / 0.98), rgb(248 248 248 / 0.96));
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgb(0 0 0 / 0.12);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.035);
 }
 
-#tagBox {
-  list-style-type: none;
-  padding-left: 5px;
-  padding-top: 40px;
-  max-height: calc(100vh - 40px - 35px);
-  width: 300px;
-  background: linear-gradient(to left, #fdfdfd, #ffffff);
-  border-right:  1px solid rgb(0 0 0 / 0.09);
-  position: fixed;
-  top: 25px;
-  left: 0;
-  height: 100%;
-  overflow: auto;
-  
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-#tagBox::-webkit-scrollbar {
-  display: none;
-}
-
+.headerInner,
 .main-content {
-  margin-left: 300px;
-  margin-top: 50px;
-  padding: 20px;
+  width: min(1100px, calc(100% - 24px));
+  margin: 0 auto;
+}
+
+.headerInner {
+  padding: 12px 0 10px;
+}
+
+.headerMetaRow {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.headerTopRow {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.searchShell {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1 1 auto;
+}
+
+.searchTools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.searchContainer {
+  display: flex;
+  align-items: stretch;
+  min-height: 42px;
+  margin: 0;
+  white-space: nowrap;
+  gap: 0;
+  flex: 1 1 auto;
 }
 
 #searchInput {
   flex-grow: 1;
-
+  min-width: 0;
+  padding: 8px 12px;
+  font-size: 15px;
   border: 1px solid rgb(0 0 0 / 0.5);
-  border-left: 0rem solid green; 
-  padding: 8px; 
-  box-shadow: 0px 2px 5px rgb(0 0 0 / 0.1);
-  border-radius: 0; 
+  border-left: 0;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
+  border-radius: 0;
   border-top-right-radius: 16px;
   border-bottom-right-radius: 16px;
 }
 
 #searchInput:focus {
-	outline: none;
-	box-shadow: inset 0 0 3.5px rgb(0 0 0 / 0.133);
+  outline: none;
+  box-shadow: inset 0 0 3.5px rgb(0 0 0 / 0.133);
 }
 
-.searchContainer {
-  display: flex;
-  align-content: start;
-  height: 30px;
-  padding: 0px 50px 0px 50px;
-  white-space: nowrap;
-  margin-bottom: 0px;
-  flex-wrap: nowrap;
+.filterToggle {
+  background-color: #f8f9fa;
+  padding: 7px 12px;
+  font-size: 13px;
+  border: 1px solid rgb(0 0 0 / 0.2);
+  border-radius: 999px;
+  cursor: pointer;
+  color: rgb(0 0 0 / 0.78);
+  box-shadow: 0 2px 5px rgb(0 0 0 / 0.08);
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.filterToggle:hover {
+  background-color: #eceff1;
+}
+
+.filterToggle[aria-expanded="true"] {
+  background-color: #111827;
+  border-color: #111827;
+  color: #fff;
+  box-shadow: 0 3px 10px rgb(17 24 39 / 0.18);
 }
 
 #searchContainerId {
   display: flex;
-  white-space: nowrap;
-    flex-wrap: nowrap;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 0;
 }
 
-#divider {
-  border: none;
-  height: 0.5px;
-  background-color: rgb(0 0 0 / 0.5);
-  box-shadow: 0 2.5px 5px rgb(0 0 0 / 0.2);
+#searchContainerId:empty {
+  display: none;
 }
 
-.smallSpace {
-    height: 25px;
+.tagPanel {
+  overflow: auto;
+  max-height: 280px;
+  opacity: 1;
+  transition: max-height 0.2s ease, opacity 0.2s ease, padding 0.2s ease;
+  margin: 6px 0;
+  padding: 4px 0 2px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tagPanel.collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.tagPanel::-webkit-scrollbar {
+  display: none;
+}
+
+#tagBox {
+  list-style-type: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  padding: 0;
+  margin: 0;
+}
+
+#results {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.main-content {
+  padding: 16px 0 24px;
 }
 
 #output {
-	font-family:monospace;
-}
-
-#footer {
-   position: fixed;
-   top: 0;
-   left: 0;
-   width: 100%;
-   padding-bottom: 3px;
-
-   background-color: rgb(252 252 252);
-   color: rgb(0 0 0 / 0.7);
-   text-align: center;
-   font-size: medium;
-   border-bottom: 1px solid rgb(0 0 0 / 0.2);
+  font-family: monospace;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: rgb(0 0 0 / 0.65);
+  font-size: 12px;
+  line-height: 1.3;
+  padding: 0;
 }
 
 .footerLink {
-   color: rgb(0 0 0 / 0.8);
+  color: rgb(0 0 0 / 0.8);
 }
 
 .tagLink {
-  margin-right: 15px;
   white-space: nowrap;
-  text-decoration:none;
+  text-decoration: none;
   color: rgb(255 255 255);
-  text-shadow: 0px 1px 3px rgb(64 64 64);
+  text-shadow: 0 1px 3px rgb(64 64 64);
   font-weight: 500;
   font-size: 14px;
   line-height: 250%;
-  border-radius: 10px;
-  border-style: solid;
   border: 1px solid rgb(0 0 0 / 0.3);
-  box-shadow: 0px 2px 5px rgb(0 0 0 / 0.1);
-  padding: 5px 5px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
+  padding: 5px 7px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .tagCounter {
-   color: rgb(255 255 255);
-   text-decoration:none;
-   text-shadow: 0px 2px 50px rgba(220 220 220 255);
-   margin-left: 8px;
-   padding: 0px 2px;
+  color: rgb(255 255 255);
+  text-decoration: none;
+  text-shadow: 0 2px 50px rgba(220 220 220 255);
+  margin-left: 8px;
+  padding: 0 2px;
 }
 
 .tagSearchPill {
   white-space: nowrap;
-  text-decoration:none;
+  text-decoration: none;
   color: rgb(255 255 255);
-  text-shadow: 0px 1px 3px rgb(64 64 64);
+  text-shadow: 0 1px 3px rgb(64 64 64);
   font-weight: 700;
   border-style: solid;
   border-top: 1px solid rgb(0 0 0 / 0.3);
   border-bottom: 1px solid rgb(0 0 0 / 0.3);
-  border-right: 1px solid rgb(0 0 0 / 0.3); 
-  border-left: 0rem solid green; 
-  
-  box-shadow: 0px 2px 5px rgb(0 0 0 / 0.1);
-  padding: 5px 5px;
-  
-  height: 100%;
-  position:relative;
-  float:left;
-  margin: 0 0 2% 0;
+  border-right: 1px solid rgb(0 0 0 / 0.3);
+  border-left: 0;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
+  padding: 7px 10px;
+  border-radius: 999px;
+  margin: 0;
+  cursor: pointer;
 }
 
 .mainDropdown {
-  padding: 3.5px 6px 15px 10px;
-  border-radius: 0; 
+  padding: 3.5px 10px 15px 12px;
+  border-radius: 0;
   border-top-left-radius: 16px;
   border-bottom-left-radius: 16px;
   border: 1px double rgb(0 0 0 / 0.4);
+  min-width: 52px;
 }
 
 .mainDropdownIdleAnim {
-  background: 
-   linear-gradient(rgba(255,0,0,1) 0%, rgba(255,154,0,1) 10%, rgba(208,222,33,1) 20%, rgba(79,220,74,1) 30%, rgba(63,218,216,1) 40%, rgba(47,201,226,1) 50%, rgba(28,127,238,1) 60%, rgba(95,21,242,1) 70%, rgba(186,12,248,1) 80%, rgba(251,7,217,1) 90%, rgba(255,0,0,1) 100%) 
-   0 0/100% 200%;
+  background:
+   linear-gradient(rgba(255, 0, 0, 1) 0%, rgba(255, 154, 0, 1) 10%, rgba(208, 222, 33, 1) 20%, rgba(79, 220, 74, 1) 30%, rgba(63, 218, 216, 1) 40%, rgba(47, 201, 226, 1) 50%, rgba(28, 127, 238, 1) 60%, rgba(95, 21, 242, 1) 70%, rgba(186, 12, 248, 1) 80%, rgba(251, 7, 217, 1) 90%, rgba(255, 0, 0, 1) 100%)
+   0 0 / 100% 200%;
   animation: rainbow 10s linear infinite;
   animation-direction: forward;
 }
 
 .extraResultContent {
-  background: linear-gradient(rgba(32,32,32,0.9) 0%, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 50%, rgba(0,0,0,0) 100%);
+  background: linear-gradient(rgba(32, 32, 32, 0.9) 0%, rgba(0, 0, 0, 1) 10%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0) 100%);
   max-width: min-content;
   max-height: 100%;
   margin-top: 8px;
@@ -189,32 +263,32 @@ li {
 }
 
 .videoButton {
-    border-radius: 8px; 
-    border: 1px solid rgb(0 0 0 / 0.4);
-	padding-bottom: 3.5px;
-    position: relative;
-    top: -2px;
-	margin-left: 3px;
+  border-radius: 8px;
+  border: 1px solid rgb(0 0 0 / 0.4);
+  padding-bottom: 3.5px;
+  position: relative;
+  top: -2px;
+  margin-left: 3px;
 }
 
-.videoButton:active{
+.videoButton:active {
   animation: pressDown 0.066s cubic-bezier(0.33, 1, 0.68, 1) 1;
 }
 
 .videoCloseButton {
-	float: right;
-	border-radius: 16px; 
-    background-color: transparent;
-	color: rgb(255 255 255);
-	border: 1px solid rgb(0 0 0 / 0.01);
+  float: right;
+  border-radius: 16px;
+  background-color: transparent;
+  color: rgb(255 255 255);
+  border: 1px solid rgb(0 0 0 / 0.01);
 }
 
 .logo:hover, logo:active {
   animation: pressDown 0.1s linear 1;
   animation-fill-mode: forwards;
   color: rgb(255 255 255);
-  text-shadow: 0px 1px 6px rgb(0 0 0 / 0.3);
-  display: inline-block; 
+  text-shadow: 0 1px 6px rgb(0 0 0 / 0.3);
+  display: inline-block;
 }
 
 .loader {
@@ -224,52 +298,18 @@ li {
   width: 33px;
   height: 33px;
   animation: spin 0.33s linear infinite;
-  position: absolute;
-  top:0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  
-  margin: auto;
-  z-index: -1;
+  margin: 12px auto;
 }
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes pressDown {
-	0% {
-		transform: scale(1);
-	}
-
-	100% {
-		transform: scale(0.8);
-	}
-}
-
-@keyframes rainbow{
-  to {background-position:0 -200%}
-}
-
-@keyframes fadeIn{
-  0% {opacity: 0}
-  16% {opacity: 0}
-  100% {opacity: 1}
-}
-
-/* Dropdown bar */
 
 .modal-bar {
   align-items: center;
-  padding: 15px 0px 0px 15px;
+  padding: 8px 0 12px;
   width: 100%;
   box-sizing: border-box;
 }
 
 .modal-bar.hidden {
-	display:none;
+  display: none;
 }
 
 .dropdown {
@@ -296,7 +336,7 @@ li {
   position: absolute;
   background-color: #fff;
   min-width: 120px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid #ddd;
   border-radius: 3px;
   z-index: 1;
@@ -320,55 +360,118 @@ li {
 }
 
 .dropbtn::after {
-  content: '▼';
+  content: '\25BC';
   font-size: 8px;
   margin-left: 4px;
 }
 
-.modal-bar.hidden {
-  opacity: 0;
-  visibility: hidden;
-  position: absolute;
+.videoModal iframe {
+  width: min(100%, 560px);
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
 }
 
-/* End dropdowns */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
+@keyframes pressDown {
+  0% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(0.8);
+  }
+}
+
+@keyframes rainbow {
+  to { background-position: 0 -200%; }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  16% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@media (max-width: 720px) {
+  .headerInner,
+  .main-content {
+    width: calc(100% - 16px);
+  }
+
+  .headerTopRow {
+    align-items: stretch;
+  }
+
+  .searchTools {
+    flex-wrap: wrap;
+  }
+
+  .searchContainer {
+    width: 100%;
+  }
+
+  #output {
+    width: 100%;
+  }
+
+  .tagPanel {
+    max-height: 220px;
+  }
+}
 </style>
 <title>cobweb</title>
 <link rel="preload" href="https://raw.githubusercontent.com/auxc/auxc.github.io/refs/heads/main/searchdb.txt" as="fetch" crossorigin="anonymous">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕸️</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#x1F578;&#xFE0F;</text></svg>">
 </head>
 <body onload="test()">
-<div class="main-content">
-	<div class="modal-bar hidden">
-		<div class="dropdown">
-		  <button class="dropbtn">Sort by: Relevance</button>
-		  <div class="dropdown-content">
-			<a href="#" data-sort="0">Relevance</a>
-			<a href="#" data-sort="1">Newest</a>
-			<a href="#" data-sort="2">Oldest</a>
-		  </div>
-		  </div>
-	</div>
-	<ul id='videoBox'>
-	</ul>
-	<ul id='results'>
-	</ul>
+<div id="appHeader">
+  <div class="headerInner">
+    <div class="headerMetaRow">
+      <small id="output"><a href="changelog.html">v0.6</a> &#x1F570;&#xFE0F; <a href="index.html">cobweb</a> &middot; curios found by 5412177 &amp; friends<span id="indexMeta"></span></small>
+    </div>
+    <div class="headerTopRow">
+      <div class="searchShell">
+        <div class="searchTools">
+          <p class="searchContainer">
+            <button class="mainDropdown" id="mainButton" onclick="resetSearch()">
+              <span class="logo">&#x1F570;&#xFE0F;</span>
+            </button>
+            <input oninput="updateResults(false, true)" id="searchInput" placeholder="type to begin">
+          </p>
+          <button type="button" class="filterToggle" id="tagToggleButton" aria-expanded="false" onclick="toggleTagPanel()">
+            Tags
+          </button>
+        </div>
+        <div id="searchContainerId"></div>
+      </div>
+    </div>
+    <div id="tagPanel" class="tagPanel collapsed">
+      <ul id="tagBox">
+        <li id="init_loader" class="loader"></li>
+      </ul>
+    </div>
+  </div>
 </div>
-<ul id='tagBox'>
-<div id="init_loader" class="loader"></div>
-</ul>
-<div id="footer">
-  <center>
-    <p class="searchContainer">
-      <button class="mainDropdown" id="mainButton" onclick="resetSearch()">
-        <span class="logo">🕰️</span>
-      </button>
-      <span id="searchContainerId"></span>
-      <input oninput="updateResults(false, true)" id="searchInput" placeholder="type to begin">
-    </p>
-  </center>
-<small id = "output"><a href="changelog.html">v0.6</a> 🕰️ <a href="index.html">cobweb</a> · curios found by 5412177 & friends</small>
+<div class="main-content">
+  <div class="modal-bar hidden">
+    <div class="dropdown">
+      <button class="dropbtn">Sort by: Relevance</button>
+      <div class="dropdown-content">
+        <a href="#" data-sort="0">Relevance</a>
+        <a href="#" data-sort="1">Newest</a>
+        <a href="#" data-sort="2">Oldest</a>
+      </div>
+    </div>
+  </div>
+  <ul id="videoBox">
+  </ul>
+  <ul id="results">
+  </ul>
 </div>
 
 <script>
@@ -377,7 +480,7 @@ var storedText;
 var searchIndex;
 
 var splitWordsExp = /\(([^)]+)\)/g;
-var tagExp =  /([^:\s]+):([^:\s]+)/g;
+var tagExp = /([^:\s]+):([^:\s]+)/g;
 var globalTags = new Array();
 var globalResults = new Array();
 var globalCategoryMap = new Map();
@@ -386,14 +489,12 @@ var tagColorMap = new Map();
 
 var updateSearchTextHistoryTimer = null;
 
-//modal bar stuff
 const SORTING_RELEVANCE = 0;
 const SORTING_NEWEST = 1;
 const SORTING_OLDEST = 2;
 
 var sortingMode = SORTING_RELEVANCE;
 
-//data format
 var URL = 0;
 var NAME = 1;
 var DESCRIPTION = 2;
@@ -403,167 +504,162 @@ var TIMESTAMP = 5;
 var ARCHIVE_URL = 6;
 var HEADER_WORD_COUNT = 7;
 
-var tagBox = document.getElementById("tagBox");
-var mainContent = document.querySelector(".main-content");
+function test() {
+  var input = document.getElementById('searchInput');
+  input.addEventListener('keydown', onKeyDown);
 
-tagBox.addEventListener("mousemove", function (e) {
-  if (e.offsetX > tagBox.offsetWidth - 10) {
-    tagBox.style.cursor = "ew-resize";
-  } else {
-    tagBox.style.cursor = "default";
-  }
-});
+  window.addEventListener('popstate', function() {
+    grabTagsFromURL();
+    grabSearchFromURL();
+    updateResults(false);
+  });
 
-tagBox.addEventListener("mousedown", function (e) {
-  if (e.offsetX > tagBox.offsetWidth - 10) {
-    document.addEventListener("mousemove", resizeSidebar);
-    document.addEventListener("mouseup", stopResize);
-    
-    document.body.style.userSelect = "none";
-    document.body.style.pointerEvents = "none"; 
-    document.body.style.cursor = "ew-resize";
-  }
-});
+  initModalBar();
+  grabTagsFromURL();
+  grabSearchFromURL();
 
-function resizeSidebar(e) {
-  let newWidth = e.clientX;
-  if (newWidth > 150 && newWidth < 600) {
-    tagBox.style.width = newWidth + "px";
-    mainContent.style.marginLeft = newWidth + "px";
-  }
-}
+  storedText = localStorage.getItem('cacheddb');
 
-function stopResize() {
-  document.removeEventListener("mousemove", resizeSidebar);
-  document.removeEventListener("mouseup", stopResize);
-  
-  document.body.style.userSelect = "";
-  document.body.style.pointerEvents = "";
-  document.body.style.cursor = "";
-}
+  if (storedText)
+    done();
 
-function test(){
-	var input = document.getElementById('searchInput');
-	input.addEventListener('keydown', onKeyDown);
-	
-	window.addEventListener('popstate', function(event) {
-		grabTagsFromURL();
-		grabSearchFromURL();
-		updateResults(false);
-	});
-	
-	initModalBar();
-	grabTagsFromURL();
-	grabSearchFromURL();
-	
-	storedText = localStorage.getItem('cacheddb');
+  fetch(url)
+    .then(function(response) {
+      response.text().then(function(text) {
+        if (storedText === text)
+          return;
 
-	if(storedText)
-		done();
-
-	fetch(url)
-	  .then(function(response) {
-		response.text().then(function(text) {
-		
-		  if(storedText === text)
-			return;
-		
-		  storedText = text;
-		  done();
-		  localStorage.setItem('cacheddb', text);
-		});
-	});
-}
-
-function initModalBar(){
-    var dropbtn = document.querySelector('.dropbtn');
-    var dropdownContent = document.querySelector('.dropdown-content');
-
-    dropdownContent.addEventListener('click', (e) => {
-      if (e.target.tagName === 'A') {	
-	    e.preventDefault();
-        sortingMode = e.target.getAttribute('data-sort');
-        dropbtn.textContent = `Sort by: ${e.target.textContent}`;
-		updateResults(false);
-      }
+        storedText = text;
+        done();
+        localStorage.setItem('cacheddb', text);
+      });
     });
 }
 
-function showModalBar(show){
-	var modalBar = document.querySelector('.modal-bar');
-	
-	if(show)
-		modalBar.classList.remove('hidden');
-	else
-		modalBar.classList.add('hidden');
+function initModalBar() {
+  var dropbtn = document.querySelector('.dropbtn');
+  var dropdownContent = document.querySelector('.dropdown-content');
+
+  dropdownContent.addEventListener('click', function(e) {
+    if (e.target.tagName === 'A') {
+      e.preventDefault();
+      sortingMode = e.target.getAttribute('data-sort');
+      dropbtn.textContent = 'Sort by: ' + e.target.textContent;
+      updateResults(false);
+    }
+  });
 }
 
-//example usage:
-//setURLParams({ tags: globalTags }, { push: true }); 
-function setURLParams(newParams, { push = true, arraySep = ',' } = {}) {
-  const sp = new URLSearchParams(window.location.search);
+function showModalBar(show) {
+  var modalBar = document.querySelector('.modal-bar');
 
-  for (const [k, v] of Object.entries(newParams)) {
+  if (show)
+    modalBar.classList.remove('hidden');
+  else
+    modalBar.classList.add('hidden');
+}
+
+function toggleTagPanel(forceState) {
+  var panel = document.getElementById('tagPanel');
+  var button = document.getElementById('tagToggleButton');
+  var shouldShow = forceState;
+
+  if (typeof shouldShow !== 'boolean')
+    shouldShow = panel.classList.contains('collapsed');
+
+  panel.classList.toggle('collapsed', !shouldShow);
+  refreshTagToggleLabel();
+  button.setAttribute('aria-expanded', shouldShow ? 'true' : 'false');
+}
+
+function refreshTagToggleLabel() {
+  var button = document.getElementById('tagToggleButton');
+  var count = document.getElementById('tagBox').childElementCount;
+  var baseLabel = 'Tags';
+
+  if (count > 0)
+    button.textContent = baseLabel + ' (' + count + ')';
+  else
+    button.textContent = baseLabel;
+}
+
+function setURLParams(newParams, options) {
+  options = options || {};
+  var push = options.push !== undefined ? options.push : true;
+  var arraySep = options.arraySep || ',';
+  var sp = new URLSearchParams(window.location.search);
+
+  Object.entries(newParams).forEach(function(entry) {
+    var k = entry[0];
+    var v = entry[1];
+
     if (v === null || v === undefined || v === '') {
       sp.delete(k);
     } else if (Array.isArray(v)) {
-      if (v.length === 0) sp.delete(k);
-      else sp.set(k, v.join(arraySep));
+      if (v.length === 0)
+        sp.delete(k);
+      else
+        sp.set(k, v.join(arraySep));
     } else {
       sp.set(k, String(v));
     }
-  }
+  });
 
-  const qs   = sp.toString();
-  const base = (window.location.origin || (window.location.protocol + '//' + window.location.host)) + window.location.pathname;
-  const hash = window.location.hash || '';
-  const url  = qs ? `${base}?${qs}${hash}` : `${base}${hash}`;
+  var qs = sp.toString();
+  var base = (window.location.origin || (window.location.protocol + '//' + window.location.host)) + window.location.pathname;
+  var hash = window.location.hash || '';
+  var nextUrl = qs ? base + '?' + qs + hash : base + hash;
 
-  window.history[push ? 'pushState' : 'replaceState']({}, '', url);
+  window.history[push ? 'pushState' : 'replaceState']({}, '', nextUrl);
 }
 
-//example usage: 
-//const q = getURLParam('q'); 
-//const tags = getURLParam('tags', { asArray: true });
-function getURLParam(name, { asArray = false, delimiter = ',' } = {}) {
-  const params = new URLSearchParams(window.location.search);
-  const raw = params.get(name);
-  if (raw === null) return asArray ? [] : null;
-  return asArray ? raw.split(delimiter).filter(s => s.length) : raw;
+function getURLParam(name, options) {
+  options = options || {};
+  var asArray = options.asArray || false;
+  var delimiter = options.delimiter || ',';
+  var params = new URLSearchParams(window.location.search);
+  var raw = params.get(name);
+  if (raw === null)
+    return asArray ? [] : null;
+  return asArray ? raw.split(delimiter).filter(function(s) { return s.length; }) : raw;
 }
 
-function grabTagsFromURL(){
-	var urlParams = new URLSearchParams(window.location.search);
-	globalTags = globalTags = getURLParam('tags', { asArray: true });
+function grabTagsFromURL() {
+  globalTags = getURLParam('tags', { asArray: true });
 }
 
 function grabSearchFromURL() {
   var inputEl = document.getElementById('searchInput');
-  const sp = new URLSearchParams(window.location.search);
-  let q = sp.get('q');
-  inputEl.value = q ?? '';
+  var sp = new URLSearchParams(window.location.search);
+  var q = sp.get('q');
+  inputEl.value = q || '';
 }
 
 function done() {
   searchIndex = storedText.split('\n');
-  document.getElementById('output').insertAdjacentHTML("beforeend", ` · <a class="footerLink" href="searchdb.txt">index(${searchIndex.length})</a>`);
+  document.getElementById('indexMeta').innerHTML = ' &middot; <a class="footerLink" href="searchdb.txt">index(' + searchIndex.length + ')</a>';
   showAllTags();
+  toggleTagPanel(false);
   updateResults(false);
 }
 
-function resetSearch(){
-	document.getElementById('searchInput').value = "";
-	globalTags.length = 0;
-	updateResults(true);
+function resetSearch() {
+  document.getElementById('searchInput').value = '';
+  globalTags.length = 0;
+  toggleTagPanel(false);
+  updateResults(true);
 }
 
-function updateResults(shouldRecordHistory, updateFromSearchInput = false) {
-  var ul = document.getElementById("results");
+function updateResults(shouldRecordHistory, updateFromSearchInput) {
+  if (updateFromSearchInput === undefined)
+    updateFromSearchInput = false;
 
-  while(ul.firstChild){
+  var ul = document.getElementById('results');
+
+  while (ul.firstChild) {
     ul.removeChild(ul.firstChild);
   }
-  
+
   globalResults.length = 0;
   globalCategoryMap.clear();
 
@@ -571,383 +667,339 @@ function updateResults(shouldRecordHistory, updateFromSearchInput = false) {
   var rawInput = inputElement.value;
   var inputStr = rawInput.trim();
   var filterStrings = inputStr.split(' ');
-  
-  for(var i = 0; i < filterStrings.length; i++){
+
+  for (var i = 0; i < filterStrings.length; i++) {
     var next = filterStrings[i];
 
-    if(next[next.length-1] != ":")
+    if (!next || next[next.length - 1] != ':')
       continue;
 
     filterStrings.splice(i, 1);
     i--;
 
-    var strippedTag = next.replace(":", "");
-    globalTags.push(strippedTag.toLowerCase());
-	shouldRecordHistory = true;
+    globalTags.push(next.replace(':', '').toLowerCase());
+    shouldRecordHistory = true;
   }
 
-  var tagExpPattern = '(?=.*(?:^|\\s)' + globalTags.map(tag => tag.replace(/#/g, '\\#')).join('(?:\\s|$))(?=.*(?:^|\\s)') + '(?:\\s|$))';
-  var tagExp = new RegExp(tagExpPattern);
+  var activeTagExp = null;
+  if (globalTags.length > 0) {
+    var tagExpPattern = '(?=.*(?:^|\\s)' + globalTags.map(function(tag) {
+      return tag.replace(/#/g, '\\#');
+    }).join('(?:\\s|$))(?=.*(?:^|\\s)') + '(?:\\s|$))';
+    activeTagExp = new RegExp(tagExpPattern);
+  }
+
   var anyTags = globalTags.length > 0;
   var forceNewest = rawInput.length == 0 && !anyTags;
+  var searchTextToDisplay = filterStrings.join(' ');
 
-  //tags moved to pills, update visible input
-  var searchTextToDisplay = filterStrings.join(" ");
+  if (rawInput.endsWith(' ') && searchTextToDisplay.length > 0)
+    searchTextToDisplay += ' ';
 
-  if(rawInput.endsWith(" ") && searchTextToDisplay.length > 0)
-	searchTextToDisplay += " ";
-	
   inputElement.value = searchTextToDisplay;
 
-  //hack to dump all matching entries if all search words were stripped as tags  
-  if(inputStr == "" || globalTags.length > 0 && (filterStrings.length == 0 || inputStr == "")) {
-  	filterStrings = ['('];
+  if (inputStr == '' || globalTags.length > 0 && (filterStrings.length == 0 || inputStr == '')) {
+    filterStrings = ['('];
   }
 
-  var searchSansTags = filterStrings.join(" ");
+  var searchSansTags = filterStrings.join(' ');
   var tokens = [];
   var singleWordsOrQuotedStrings = /"([^"]+)"|\S+/g;
   var match;
   while ((match = singleWordsOrQuotedStrings.exec(searchSansTags)) !== null) {
-    tokens.push(match[1] || match[0]); // match[1] - quoted phrase, match[0] - word
+    tokens.push(match[1] || match[0]);
   }
 
   var escapedWords = tokens
-    .map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-    .filter(w => w.length > 0);
-  var filterExp = new RegExp(`(${escapedWords.join('|')})`, 'ig');
+    .map(function(w) { return w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); })
+    .filter(function(w) { return w.length > 0; });
+  var filterExp = new RegExp('(' + escapedWords.join('|') + ')', 'ig');
   var scoredMatches = new Map();
-  
-  let matchTracker = new Set();
-  
-  searchIndex.forEach((entry) => {
-	  if(entry.length == 0)
-		return;
-	  
-	  var matches = [];
 
-	  entry.replace(filterExp, function(matchedWord) {
-		matches.push(Array.prototype.slice.call(arguments, 1).filter(Boolean));
-		matchTracker.add(matchedWord.toLowerCase());
-	  });
+  searchIndex.forEach(function(entry) {
+    if (entry.length == 0)
+      return;
 
-	  const entryLower = entry.toLowerCase();
-	  let matchedTokenCount = 0;
+    var matches = [];
 
-	  //count unique search term matches
-	  for (const token of tokens) {
-	    const tokenLower = token.toLowerCase();
-	    if (entryLower.includes(tokenLower)) {
-		  matchedTokenCount++;
-	    }
-	  }
+    entry.replace(filterExp, function(matchedWord) {
+      matches.push(Array.prototype.slice.call(arguments, 1).filter(Boolean));
+    });
 
-	  matches.forEach((match) => {
-		var input = match[0];
-		
-		var wordAtIndex = getWordAtIndex(match[2], match[1]);
-		
-		if(!wordAtIndex) //todo: check the null that comes up here sometimes
-			return;
+    var entryLower = entry.toLowerCase();
+    var matchedTokenCount = 0;
 
-		var output = stripParentheses(wordAtIndex, ['(', ')', '.', ',', '\"']);
-		
-		if(!output)
-			return;
-		
-		if(output.startsWith("http://") || output.startsWith("https://"))
-			return;
-			
-		var wordIndex = countCharacterOccurrences(match[2], ')', 0, match[1]);
-		var penaltyMultiplier = 1;
-		var flatPenalty = 0;
-		
-		switch (wordIndex) {
-		  case URL:
-			penaltyMultiplier = 100;
-			break;
-		  case NAME:
-			penaltyMultiplier = 1;
-			break;
-		  case DESCRIPTION:
-			penaltyMultiplier = 50;
-			flatPenalty = 1;
-			break;
-		  case CATEGORY:
-			penaltyMultiplier = 75;
-			flatPenalty = 1;
-			break;
-		  case KEYWORDS:
-			penaltyMultiplier = 100;
-			flatPenalty = 1;
-			break;
-		  case ARCHIVE_URL:
-			penaltyMultiplier = 100;
-			break;
-		}
-		
-		var tokenMatchCountScore = matchedTokenCount > 1 ? matchedTokenCount * 1000 : 0;
-		var score = -getLevenshteinDistance(input, output) * penaltyMultiplier - flatPenalty + tokenMatchCountScore;
-		
-		var scoredMatch = {
-			searchTerm: input,
-			match: output,
-			score: score,
-			wordIndex: wordIndex,
-			totalMatches: 1,
-			line: match[2],
-			timestamp: getNthBracketedItem(match[2], TIMESTAMP)
-		};
-		
-		if(scoredMatches.has(match[2])){
-			var existing = scoredMatches.get(match[2]);
-			existing.totalMatches++;
-			
-			if(existing.score < score)
-				scoredMatches.set(match[2], scoredMatch)
-		}
-		else
-			scoredMatches.set(match[2], scoredMatch)
-	  });
+    tokens.forEach(function(token) {
+      if (entryLower.includes(token.toLowerCase()))
+        matchedTokenCount++;
+    });
+
+    matches.forEach(function(localMatch) {
+      var input = localMatch[0];
+      var wordAtIndex = getWordAtIndex(localMatch[2], localMatch[1]);
+
+      if (!wordAtIndex)
+        return;
+
+      var output = stripParentheses(wordAtIndex, ['(', ')', '.', ',', '"']);
+
+      if (!output)
+        return;
+
+      if (output.startsWith('http://') || output.startsWith('https://'))
+        return;
+
+      var wordIndex = countCharacterOccurrences(localMatch[2], ')', 0, localMatch[1]);
+      var penaltyMultiplier = 1;
+      var flatPenalty = 0;
+
+      switch (wordIndex) {
+        case URL:
+          penaltyMultiplier = 100;
+          break;
+        case NAME:
+          penaltyMultiplier = 1;
+          break;
+        case DESCRIPTION:
+          penaltyMultiplier = 50;
+          flatPenalty = 1;
+          break;
+        case CATEGORY:
+          penaltyMultiplier = 75;
+          flatPenalty = 1;
+          break;
+        case KEYWORDS:
+          penaltyMultiplier = 100;
+          flatPenalty = 1;
+          break;
+        case ARCHIVE_URL:
+          penaltyMultiplier = 100;
+          break;
+      }
+
+      var tokenMatchCountScore = matchedTokenCount > 1 ? matchedTokenCount * 1000 : 0;
+      var score = -getLevenshteinDistance(input, output) * penaltyMultiplier - flatPenalty + tokenMatchCountScore;
+
+      var scoredMatch = {
+        searchTerm: input,
+        match: output,
+        score: score,
+        wordIndex: wordIndex,
+        totalMatches: 1,
+        line: localMatch[2],
+        timestamp: getNthBracketedItem(localMatch[2], TIMESTAMP)
+      };
+
+      if (scoredMatches.has(localMatch[2])) {
+        var existing = scoredMatches.get(localMatch[2]);
+        existing.totalMatches++;
+
+        if (existing.score < score)
+          scoredMatches.set(localMatch[2], scoredMatch);
+      } else {
+        scoredMatches.set(localMatch[2], scoredMatch);
+      }
+    });
   });
-  
+
   var scoredArr = [];
-  
-  scoredMatches.forEach((value, key) => {
-	scoredArr.push(value);
+  scoredMatches.forEach(function(value) {
+    scoredArr.push(value);
   });
-  
-  const sortByRelevance = (x, y) => y.score - x.score;
-  
-  const sortByNewest = (x, y) => {
-    if (x.timestamp === y.timestamp) {
-      return y.score - x.score;
-    }
-    return y.timestamp - x.timestamp;
-  };
-  
-  const sortByOldest = (x, y) => {
-    if (x.timestamp === y.timestamp) {
-      return y.score - x.score;
-    }
-    return x.timestamp - y.timestamp;
-  };
-  
-  mode = forceNewest ? SORTING_NEWEST : parseInt(sortingMode);
 
-  switch (mode) {
-    case SORTING_RELEVANCE:
-      scoredArr.sort(sortByRelevance);
-      break;
-
-    case SORTING_NEWEST:
-      scoredArr.sort(sortByNewest);
-      break;
-
-    case SORTING_OLDEST:
-      scoredArr.sort(sortByOldest);
-      break;
-
-    default:
-      console.log("Unrecognized sort mode: " + mode);
-      scoredArr.sort(sortByRelevance);
-      break;
+  var mode = forceNewest ? SORTING_NEWEST : parseInt(sortingMode);
+  if (mode === SORTING_RELEVANCE) {
+    scoredArr.sort(function(x, y) { return y.score - x.score; });
+  } else if (mode === SORTING_NEWEST) {
+    scoredArr.sort(function(x, y) {
+      if (x.timestamp === y.timestamp)
+        return y.score - x.score;
+      return y.timestamp - x.timestamp;
+    });
+  } else if (mode === SORTING_OLDEST) {
+    scoredArr.sort(function(x, y) {
+      if (x.timestamp === y.timestamp)
+        return y.score - x.score;
+      return x.timestamp - y.timestamp;
+    });
+  } else {
+    scoredArr.sort(function(x, y) { return y.score - x.score; });
   }
-  
+
   var showingAny = false;
+  var liHTML = '';
 
-  var liHTML = "";
-
-  scoredArr.forEach((scoredMatch) => {
-    if(!scoredMatch)
+  scoredArr.forEach(function(scoredMatch) {
+    if (!scoredMatch)
       return;
-		
-	var words = scoredMatch.line.match(splitWordsExp);
-	var category = stripParentheses(words[CATEGORY], ['(', ')']);
 
-	if(anyTags && !tagExp.test(category))
-		return;
+    var words = scoredMatch.line.match(splitWordsExp);
+    var category = stripParentheses(words[CATEGORY], ['(', ')']);
 
-	var categories = new Array();
+    if (anyTags && !activeTagExp.test(category))
+      return;
+
     var htmlResult = getResultString(scoredMatch.line);
-
-    if(htmlResult.length == 0)
+    if (htmlResult.length == 0)
       return;
 
-	liHTML += htmlResult;
-	showingAny = true;
-	globalResults.push(scoredMatch);
+    liHTML += htmlResult;
+    showingAny = true;
+    globalResults.push(scoredMatch);
   });
-  
+
   ul.insertAdjacentHTML('beforeEnd', liHTML);
-  
+
   showAllTags();
   updateSearchPills(shouldRecordHistory);
-  
-  if(updateFromSearchInput){
-	recordSearchTextDeferred(searchTextToDisplay);
-  }
-  
-  document.getElementById('mainButton').classList.toggle("mainDropdownIdleAnim", showingAny);
-  showModalBar(globalResults.length > 1 && !forceNewest);
-  
-  var isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if(!isMobile)
-	inputElement.focus();
-	
-  function recordSearchTextDeferred(q){
+
+  if (updateFromSearchInput) {
     clearTimeout(updateSearchTextHistoryTimer);
-	updateSearchTextHistoryTimer = setTimeout(() => {
-	    setURLParams({ q: searchTextToDisplay }, { push: true });
-	}, 500);
+    updateSearchTextHistoryTimer = setTimeout(function() {
+      setURLParams({ q: searchTextToDisplay }, { push: true });
+    }, 500);
   }
+
+  document.getElementById('mainButton').classList.toggle('mainDropdownIdleAnim', showingAny);
+  showModalBar(globalResults.length > 1 && !forceNewest);
+
+  if (!/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent))
+    inputElement.focus();
 }
 
-//todo: 'word' is sometimes used to refer to a column, but this grabs a literal word. Do a naming pass at some point
 function getWordAtIndex(str, index) {
-	if(!str)
-		return "";
+  if (!str)
+    return '';
 
-    var words = str.split(/\s+/);
-    var currentPosition = 0;
-    var currentWord = null;
+  var words = str.split(/\s+/);
+  var currentPosition = 0;
+  var currentWord = null;
 
-    for (var i = 0; i < words.length; i++) {
-        var endPosition = currentPosition + words[i].length;
+  for (var i = 0; i < words.length; i++) {
+    var endPosition = currentPosition + words[i].length;
 
-        if (index >= currentPosition && index < endPosition) {
-            currentWord = words[i];
-            break;
-        }
-
-        currentPosition = endPosition + 1;
+    if (index >= currentPosition && index < endPosition) {
+      currentWord = words[i];
+      break;
     }
 
-    return currentWord;
+    currentPosition = endPosition + 1;
+  }
+
+  return currentWord;
 }
 
 function getNthBracketedItem(str, index) {
   var matches = str.match(/\(([^)]+)\)/g);
 
-  if (!matches || index < 0 || index >= matches.length) {
+  if (!matches || index < 0 || index >= matches.length)
     return null;
+
+  return matches[index].slice(1, -1);
+}
+
+function getLevenshteinDistance(s, t) {
+  if (s === t)
+    return 0;
+
+  var n = s.length;
+  var m = t.length;
+  if (n === 0 || m === 0)
+    return n + m;
+
+  var x = 0;
+  var y;
+  var a, b, c, d, g, h;
+  var p = new Uint16Array(n);
+  var u = new Uint32Array(n);
+  for (y = 0; y < n;) {
+    u[y] = s.charCodeAt(y);
+    p[y] = ++y;
   }
 
-  const nthItem = matches[index].slice(1, -1);
-  return nthItem;
+  for (; (x + 3) < m; x += 4) {
+    var e1 = t.charCodeAt(x);
+    var e2 = t.charCodeAt(x + 1);
+    var e3 = t.charCodeAt(x + 2);
+    var e4 = t.charCodeAt(x + 3);
+    c = x;
+    b = x + 1;
+    d = x + 2;
+    g = x + 3;
+    h = x + 4;
+    for (y = 0; y < n; y++) {
+      a = p[y];
+      if (a < c || b < c) {
+        c = (a > b ? b + 1 : a + 1);
+      } else if (e1 !== u[y]) {
+        c++;
+      }
+
+      if (c < b || d < b) {
+        b = (c > d ? d + 1 : c + 1);
+      } else if (e2 !== u[y]) {
+        b++;
+      }
+
+      if (b < d || g < d) {
+        d = (b > g ? g + 1 : b + 1);
+      } else if (e3 !== u[y]) {
+        d++;
+      }
+
+      if (d < g || h < g) {
+        g = (d > h ? h + 1 : d + 1);
+      } else if (e4 !== u[y]) {
+        g++;
+      }
+      p[y] = h = g;
+      g = d;
+      d = b;
+      b = c;
+      c = a;
+    }
+  }
+
+  for (; x < m;) {
+    var e = t.charCodeAt(x);
+    c = x;
+    d = ++x;
+    for (y = 0; y < n; y++) {
+      a = p[y];
+      if (a < c || d < c) {
+        d = (a > d ? d + 1 : a + 1);
+      } else if (e !== u[y]) {
+        d = c + 1;
+      } else {
+        d = c;
+      }
+      p[y] = d;
+      c = a;
+    }
+    h = d;
+  }
+
+  return h;
 }
 
-//https://stackoverflow.com/questions/18516942/fastest-general-purpose-levenshtein-javascript-implementation
-function getLevenshteinDistance(s, t) {
-    if (s === t) {
-        return 0;
-    }
-    var n = s.length, m = t.length;
-    if (n === 0 || m === 0) {
-        return n + m;
-    }
-    var x = 0, y, a, b, c, d, g, h;
-    var p = new Uint16Array(n);
-    var u = new Uint32Array(n);
-    for (y = 0; y < n;) {
-        u[y] = s.charCodeAt(y);
-        p[y] = ++y;
-    }
-
-    for (; (x + 3) < m; x += 4) {
-        var e1 = t.charCodeAt(x);
-        var e2 = t.charCodeAt(x + 1);
-        var e3 = t.charCodeAt(x + 2);
-        var e4 = t.charCodeAt(x + 3);
-        c = x;
-        b = x + 1;
-        d = x + 2;
-        g = x + 3;
-        h = x + 4;
-        for (y = 0; y < n; y++) {
-            a = p[y];
-            if (a < c || b < c) {
-                c = (a > b ? b + 1 : a + 1);
-            }
-            else {
-                if (e1 !== u[y]) {
-                    c++;
-                }
-            }
-
-            if (c < b || d < b) {
-                b = (c > d ? d + 1 : c + 1);
-            }
-            else {
-                if (e2 !== u[y]) {
-                    b++;
-                }
-            }
-
-            if (b < d || g < d) {
-                d = (b > g ? g + 1 : b + 1);
-            }
-            else {
-                if (e3 !== u[y]) {
-                    d++;
-                }
-            }
-
-            if (d < g || h < g) {
-                g = (d > h ? h + 1 : d + 1);
-            }
-            else {
-                if (e4 !== u[y]) {
-                    g++;
-                }
-            }
-            p[y] = h = g;
-            g = d;
-            d = b;
-            b = c;
-            c = a;
-        }
-    }
-
-    for (; x < m;) {
-        var e = t.charCodeAt(x);
-        c = x;
-        d = ++x;
-        for (y = 0; y < n; y++) {
-            a = p[y];
-            if (a < c || d < c) {
-                d = (a > d ? d + 1 : a + 1);
-            }
-            else {
-                if (e !== u[y]) {
-                    d = c + 1;
-                }
-                else {
-                    d = c;
-                }
-            }
-            p[y] = d;
-            c = a;
-        }
-        h = d;
-    }
-
-    return h;
-}
-
-function getResultString(rawResult, outCategories){
-  var url, name, description, category, timestamp, archiveUrl;
+function getResultString(rawResult) {
+  var urlValue;
+  var name;
+  var description;
+  var category;
+  var timestamp;
+  var archiveUrl;
   var resultWords = rawResult.match(splitWordsExp);
 
-  if(!resultWords)
-    return "";
+  if (!resultWords)
+    return '';
 
-  for (var i = 0; i < HEADER_WORD_COUNT; i++) { 
+  for (var i = 0; i < HEADER_WORD_COUNT; i++) {
     var word = stripParentheses(resultWords[i], ['(', ')']);
-	
+
     switch (i) {
       case URL:
-        url = word;
+        urlValue = word;
         break;
       case NAME:
         name = word;
@@ -956,307 +1008,301 @@ function getResultString(rawResult, outCategories){
         description = word;
         break;
       case CATEGORY:
-		word.split(" ").forEach((cat) => {
-			if(globalCategoryMap.has(cat))
-				globalCategoryMap.get(cat).val++;
-			else
-				globalCategoryMap.set(cat, {val: 1});
-		});
-		
+        word.split(' ').forEach(function(cat) {
+          if (globalCategoryMap.has(cat))
+            globalCategoryMap.get(cat).val++;
+          else
+            globalCategoryMap.set(cat, { val: 1 });
+        });
         category = word;
         break;
-      case KEYWORDS:
-        break;
-	  case TIMESTAMP:
-		var unixTime = parseInt(word);
-		var options = { dateStyle: 'medium' };
-		timestamp = new Date(unixTime * 1000).toLocaleString(undefined, options);
+      case TIMESTAMP:
+        timestamp = new Date(parseInt(word) * 1000).toLocaleString(undefined, { dateStyle: 'medium' });
         break;
       case ARCHIVE_URL:
         archiveUrl = word;
         break;
     }
   }
-  
-   var embedInfo = tryGetEmbedHTML(url);
-   var extraButtonHtml = "";
-   var extraContentHtml = "";
-  
-   if(embedInfo.success){
+
+  var embedInfo = tryGetEmbedHTML(urlValue);
+  var extraButtonHtml = '';
+  var extraContentHtml = '';
+
+  if (embedInfo.success) {
     extraButtonHtml = embedInfo.buttonHtml;
-	extraContentHtml = `<div class="extraResultContent" id="${embedInfo.id}"></div>`;
-   }
-  
-  var archiveLinkHtml = "";
-  if(archiveUrl && archiveUrl !== "MISSING_ARCHIVE_LINK" && archiveUrl !== "SITE_NOT_ARCHIVABLE" && 
-     (archiveUrl.startsWith("http://") || archiveUrl.startsWith("https://"))) {
-    archiveLinkHtml = ` · <a href='${archiveUrl}'>archive</a>`;
+    extraContentHtml = '<div class="extraResultContent" id="' + embedInfo.id + '"></div>';
   }
-  
-  var result = `<li><b><a href='${url}'>${name}</a> ${extraButtonHtml}</b></br><small><sup>${category} · ${timestamp}${archiveLinkHtml} · ${url}</sup></small></br class='smallSpace'/>${description}${extraContentHtml}</li>`;
-  return result;
+
+  var archiveLinkHtml = '';
+  if (archiveUrl && archiveUrl !== 'MISSING_ARCHIVE_LINK' && archiveUrl !== 'SITE_NOT_ARCHIVABLE' &&
+    (archiveUrl.startsWith('http://') || archiveUrl.startsWith('https://'))) {
+    archiveLinkHtml = ' &middot; <a href="' + archiveUrl + '">archive</a>';
+  }
+
+  return '<li><b><a href="' + urlValue + '">' + name + '</a> ' + extraButtonHtml + '</b><br><small><sup>' + category + ' &middot; ' + timestamp + archiveLinkHtml + ' &middot; ' + urlValue + '</sup></small><br class="smallSpace">' + description + extraContentHtml + '</li>';
 }
 
-function stripParentheses(str, symbols){
-
-  symbols.forEach((x) => {
-    str = str.replaceAll(x,'');
+function stripParentheses(str, symbols) {
+  symbols.forEach(function(x) {
+    str = str.replaceAll(x, '');
   });
 
   return str;
 }
 
 function countCharacterOccurrences(str, character, startIndex, endIndex) {
-    var count = 0;
+  var count = 0;
 
-    for (var i = startIndex; i <= endIndex; i++) {
-		if (str[i] === character) {
-            count++;
-        }
-    }
+  for (var i = startIndex; i <= endIndex; i++) {
+    if (str[i] === character)
+      count++;
+  }
 
-    return count;
+  return count;
 }
 
-function showAllTags(){  
-
-	if(allTags.size == 0){
-		  searchIndex.forEach((element) => {
-		  if(!element)
-			return;
-		  
-		  addTag(element, allTags);
-		});
-	}
-	
-	var sortedKeys = new Array();
-	
-	allTags.forEach((value, key) => {
-		if(globalCategoryMap.size > 0 && !globalCategoryMap.has(key))
-			return;
-
-		if(globalCategoryMap.size > 0 && globalCategoryMap.get(key).val >= globalResults.length)
-			return;
-			
-		var localCount = globalCategoryMap.size > 0 ? globalCategoryMap.get(key).val : value.val;
-		sortedKeys.push({name: key, count: localCount});
-	});
-	
-	sortedKeys.sort((x, y) => {
-		return y.count - x.count;
-	});
-
-	var tagHtml = "";
-	var counter = 0;
-	sortedKeys.forEach((key) => {
-		var color01 = counter / sortedKeys.length;
-		var localCount = globalCategoryMap.size > 0 ? globalCategoryMap.get(key.name).val :  key.count;
-		tagHtml += getTagLinkHtml(`${key.name}:`,`${key.name}`,`${localCount}`, color01, key.name) + " ";
-		counter++;
-	});
-	
-	var ul = document.getElementById("tagBox");
-
-	while(ul.firstChild){
-		ul.removeChild(ul.firstChild);
-	}
-	
-	if(globalResults.length == 1)
-		return;
-
-    var li = document.createElement("li");
-    li.insertAdjacentHTML("beforeend", tagHtml);
-    ul.appendChild(li);
-}
-
-function addTag(element, tagMap){
-    var CATEGORY = 3; 
-    var allWords = element.match(splitWordsExp);
-	
-	if(!allWords)
-		return;
-	
-    var tagWord = stripParentheses(allWords[CATEGORY], ['(', ')']);
-
-    if(tagWord.length == 0)
-      return;
-	  
-	var tags = tagWord.split(" ");
-
-	tags.forEach((tag) => {
-      if(!tag)
+function showAllTags() {
+  if (allTags.size == 0) {
+    searchIndex.forEach(function(element) {
+      if (!element)
         return;
-      
-	  if(tagMap.has(tag))
-		tagMap.get(tag).val++;
-	  else {
-		tagMap.set(tag, {val: 1 });
-	  }
+      addTag(element, allTags);
     });
+  }
+
+  var sortedKeys = new Array();
+
+  allTags.forEach(function(value, key) {
+    if (globalCategoryMap.size > 0 && !globalCategoryMap.has(key))
+      return;
+
+    if (globalCategoryMap.size > 0 && globalCategoryMap.get(key).val >= globalResults.length)
+      return;
+
+    var localCount = globalCategoryMap.size > 0 ? globalCategoryMap.get(key).val : value.val;
+    sortedKeys.push({ name: key, count: localCount });
+  });
+
+  sortedKeys.sort(function(x, y) {
+    return y.count - x.count;
+  });
+
+  var tagHtml = '';
+  var counter = 0;
+  sortedKeys.forEach(function(key) {
+    var color01 = counter / sortedKeys.length;
+    var localCount = globalCategoryMap.size > 0 ? globalCategoryMap.get(key.name).val : key.count;
+    tagHtml += getTagLinkHtml(key.name + ':', key.name, String(localCount), color01, key.name) + ' ';
+    counter++;
+  });
+
+  var tagList = document.getElementById('tagBox');
+
+  while (tagList.firstChild) {
+    tagList.removeChild(tagList.firstChild);
+  }
+
+  if (globalResults.length != 1 && sortedKeys.length > 0)
+    tagList.insertAdjacentHTML('beforeend', tagHtml);
+
+  refreshTagToggleLabel();
 }
 
-function getTagLinkHtml(url, text, suffix, color01, tag){
-	var a = [0.5, 0.5, 0.5];
-	var b = [0.5, 0.2, 0.3];
-	var c = [1.0, 1.0, 1.0];
-	var d = [0.0, 0.3, 0.6];
-	var bgColor01 = cosinePalette(color01, a, b, c, d);
-	var bgColor = `${bgColor01[0]*255} ${bgColor01[1]*255} ${bgColor01[2]*255}`
-	
-	if(tagColorMap.has(tag))
-		tagColorMap.get(tag).color = bgColor;
-	else
-		tagColorMap.set(tag, {color: bgColor});
-	
-    return `<a href='${url}' class="tagLink" style="background-color: rgb(${bgColor});" onclick="return resultOnClick(this)">${text}<span class="tagCounter">${suffix}</span></a>`;
+function addTag(element, tagMap) {
+  var allWords = element.match(splitWordsExp);
+
+  if (!allWords)
+    return;
+
+  var tagWord = stripParentheses(allWords[CATEGORY], ['(', ')']);
+  if (tagWord.length == 0)
+    return;
+
+  tagWord.split(' ').forEach(function(tag) {
+    if (!tag)
+      return;
+
+    if (tagMap.has(tag))
+      tagMap.get(tag).val++;
+    else
+      tagMap.set(tag, { val: 1 });
+  });
 }
 
-//https://www.shadertoy.com/view/ll2GD3
+function getTagLinkHtml(urlValue, text, suffix, color01, tag) {
+  var a = [0.5, 0.5, 0.5];
+  var b = [0.5, 0.2, 0.3];
+  var c = [1.0, 1.0, 1.0];
+  var d = [0.0, 0.3, 0.6];
+  var bgColor01 = cosinePalette(color01, a, b, c, d);
+  var bgColor = (bgColor01[0] * 255) + ' ' + (bgColor01[1] * 255) + ' ' + (bgColor01[2] * 255);
+
+  if (tagColorMap.has(tag))
+    tagColorMap.get(tag).color = bgColor;
+  else
+    tagColorMap.set(tag, { color: bgColor });
+
+  return '<a href="' + urlValue + '" class="tagLink" style="background-color: rgb(' + bgColor + ');" onclick="return resultOnClick(this)">' + text + '<span class="tagCounter">' + suffix + '</span></a>';
+}
+
 function cosinePalette(col01, a, b, c, d) {
-    return [
-        a[0] + b[0] * Math.cos(6.28318 * (c[0] * col01 + d[0])),
-        a[1] + b[1] * Math.cos(6.28318 * (c[1] * col01 + d[1])),
-        a[2] + b[2] * Math.cos(6.28318 * (c[2] * col01 + d[2]))
-    ];
+  return [
+    a[0] + b[0] * Math.cos(6.28318 * (c[0] * col01 + d[0])),
+    a[1] + b[1] * Math.cos(6.28318 * (c[1] * col01 + d[1])),
+    a[2] + b[2] * Math.cos(6.28318 * (c[2] * col01 + d[2]))
+  ];
 }
 
-function updateSearchPills(shouldRecordHistory){
-	var doc = document.getElementById("searchContainerId");
-	var toRemove = new Array();
+function updateSearchPills(shouldRecordHistory) {
+  var doc = document.getElementById('searchContainerId');
 
-	for (var i = 0; i < doc.childNodes.length; i++) {
-		if (doc.childNodes[i].className == "tagSearchPill") {
-			doc.removeChild(doc.childNodes[i]);
-			i--;
-		}        
-	}
-	
-	globalTags.forEach((x) => {
-		var bgColor = "230, 230, 230";
-	
-		if(tagColorMap.has(x)){
-			bgColor = tagColorMap.get(x).color;
-		}
+  while (doc.firstChild) {
+    doc.removeChild(doc.firstChild);
+  }
 
-		var html = getSearchPillHtml(x, bgColor);
-		doc.insertAdjacentHTML("beforeend", html)
-	});
-	
-	if(shouldRecordHistory){
-		setURLParams({ tags: globalTags }, { push: true });
-	}
+  globalTags.forEach(function(x) {
+    var bgColor = '230, 230, 230';
+
+    if (tagColorMap.has(x))
+      bgColor = tagColorMap.get(x).color;
+
+    doc.insertAdjacentHTML('beforeend', getSearchPillHtml(x, bgColor));
+  });
+
+  if (shouldRecordHistory)
+    setURLParams({ tags: globalTags }, { push: true });
 }
 
-function getSearchPillHtml(tag, bgColor){
-    return `<button class="tagSearchPill" onclick="onTagSearchPillClick(this)" style="background-color: rgb(${bgColor});">${tag} ×</button>`;
+function getSearchPillHtml(tag, bgColor) {
+  return '<button class="tagSearchPill" onclick="onTagSearchPillClick(this)" style="background-color: rgb(' + bgColor + ');">' + tag + ' &times;</button>';
 }
 
-function resultOnClick(arg){
-	var searchString = document.getElementById('searchInput').value;
-	searchString = `${arg.getAttribute("href")} ${searchString}`;
-    document.getElementById('searchInput').value = searchString;
-	updateResults(true);
-	return false;
+function resultOnClick(arg) {
+  var searchString = document.getElementById('searchInput').value;
+  searchString = arg.getAttribute('href') + ' ' + searchString;
+  document.getElementById('searchInput').value = searchString;
+  updateResults(true);
+  return false;
 }
 
-function onTagSearchPillClick(button){
-	[tag, unused] = button.textContent.split(" ");
-	const index = globalTags.indexOf(tag);
-	
-	if (index == -1)
-		return;
-	
-	globalTags.splice(index, 1);
-	updateResults(true);
+function onTagSearchPillClick(button) {
+  var tag = button.textContent.split(' ')[0];
+  var index = globalTags.indexOf(tag);
+
+  if (index == -1)
+    return;
+
+  globalTags.splice(index, 1);
+  updateResults(true);
 }
 
 function onKeyDown(event) {
-    const key = event.key;
-	var refreshResults = false;
+  var key = event.key;
+  var refreshResults = false;
 
-    if (key === "Backspace") {
-		var shouldDelete = event.target.selectionStart == 0 && globalTags.length > 0;
-	
-		if(shouldDelete){
-			globalTags.length = Math.max(globalTags.length - 1, 0);
-			refreshResults = true;
-		}
+  if (key === 'Backspace') {
+    var shouldDelete = event.target.selectionStart == 0 && globalTags.length > 0;
+
+    if (shouldDelete) {
+      globalTags.length = Math.max(globalTags.length - 1, 0);
+      refreshResults = true;
     }
-	
-	if (key === "Enter" && event.ctrlKey) {
-		var rawInput = document.getElementById('searchInput').value;
-		
-		if(rawInput.length > 0){
-				const url = "https://www.google.com/search?q=" + encodeURIComponent(rawInput);
-				window.location.href = url;
-		}
-		
-	}
-	
-	if(refreshResults)
-		updateResults(true);
+  }
+
+  if (key === 'Enter' && event.ctrlKey) {
+    var rawInput = document.getElementById('searchInput').value;
+
+    if (rawInput.length > 0)
+      window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(rawInput);
+  }
+
+  if (refreshResults)
+    updateResults(true);
 }
 
-function tryGetEmbedHTML(url){
-	if(url.includes("youtu.be")){
-		[unused, videoId] = url.split("be/");
-		var onClick = `htmltest("{videoId}")`;
-		var button = `<button  type="button" class="videoButton" value="${videoId}" onClick="videoPopup(this)">📺</button>`
-		return {success: true, buttonHtml: button, id: videoId}
-	}
-	else if(url.includes("youtube.com/playlist")){
-		[unused, ids] = url.split("list=");
-		[playlist, videoId] = ids.split("&si=");
-		var button = `<button  type="button" class="videoButton" value="${videoId}@${playlist}" onClick="videoPopup(this)">📺</button>`
-		return {success: true, buttonHtml: button, id: `${videoId}@${playlist}`}
-	}
-	else if(url.includes("youtube.com/watch")){
-		[unused, ids] = url.split("v=");
-		[videoId, playlist] = url.split("&list=");
-		var button = `<button  type="button" class="videoButton" value="${videoId}@${playlist}" onClick="videoPopup(this)">📺</button>`
-		return {success: true, buttonHtml: button, id: `${videoId}@${playlist}`}
-	}
-	
-	return {success: false};
+function tryGetEmbedHTML(urlValue) {
+  if (urlValue.includes('youtu.be')) {
+    var shortVideoId = urlValue.split('be/')[1];
+    return {
+      success: true,
+      buttonHtml: '<button type="button" class="videoButton" value="' + shortVideoId + '" onClick="videoPopup(this)">&#x1F4FA;</button>',
+      id: shortVideoId
+    };
+  }
+
+  if (urlValue.includes('youtube.com/playlist')) {
+    var playlistBits = urlValue.split('list=')[1].split('&si=');
+    var playlistId = playlistBits[0];
+    var playlistVideoId = playlistBits[1];
+    return {
+      success: true,
+      buttonHtml: '<button type="button" class="videoButton" value="' + playlistVideoId + '@' + playlistId + '" onClick="videoPopup(this)">&#x1F4FA;</button>',
+      id: playlistVideoId + '@' + playlistId
+    };
+  }
+
+  if (urlValue.includes('youtube.com/watch')) {
+    var queryBits = urlValue.split('v=')[1];
+    var queryParts = queryBits.split('&list=');
+    var watchVideoId = queryParts[0];
+    var watchPlaylistId = queryParts[1];
+
+    if (watchPlaylistId) {
+      return {
+        success: true,
+        buttonHtml: '<button type="button" class="videoButton" value="' + watchVideoId + '@' + watchPlaylistId + '" onClick="videoPopup(this)">&#x1F4FA;</button>',
+        id: watchVideoId + '@' + watchPlaylistId
+      };
+    }
+
+    return {
+      success: true,
+      buttonHtml: '<button type="button" class="videoButton" value="' + watchVideoId + '" onClick="videoPopup(this)">&#x1F4FA;</button>',
+      id: watchVideoId
+    };
+  }
+
+  return { success: false };
 }
 
-function videoPopup(idOwnerElement){	
-	var element = document.getElementById(idOwnerElement.value);
-	
-	if(element.childNodes.length > 0)
-		return;
-		
-	[videoId, playlist] = idOwnerElement.value.split("@");
-	html = "";
-	
-	if(playlist){
-		html = `<button class="videoCloseButton" value="${idOwnerElement.value}" onClick="videoClose(this)"><b>×&nbsp&nbsp</b></button><div class="videoModal">${getPlaylistHtml(playlist, videoId)}</div>`
-	}
-	else{
-		html = `<button class="videoCloseButton" value="${idOwnerElement.value}" onClick="videoClose(this)"><b>×&nbsp&nbsp</b></button><div class="videoModal">${getSingleVideoHtml(videoId)}</div>`
-	}
-	
-	element.insertAdjacentHTML("afterbegin", html);
-	element.classList.toggle("videoShowAnim", true);
-}	
+function videoPopup(idOwnerElement) {
+  var element = document.getElementById(idOwnerElement.value);
 
-function videoClose(idOwnerElement){
-	var element = document.getElementById(idOwnerElement.value);
-	element.classList.toggle("videoShowAnim", false);
-	
-	while(element.firstChild){
-		element.removeChild(element.firstChild);
-	}
+  if (element.childNodes.length > 0)
+    return;
+
+  var valueParts = idOwnerElement.value.split('@');
+  var videoId = valueParts[0];
+  var playlist = valueParts[1];
+  var html = '';
+
+  if (playlist) {
+    html = '<button class="videoCloseButton" value="' + idOwnerElement.value + '" onClick="videoClose(this)"><b>&times;&nbsp;&nbsp;</b></button><div class="videoModal">' + getPlaylistHtml(playlist, videoId) + '</div>';
+  } else {
+    html = '<button class="videoCloseButton" value="' + idOwnerElement.value + '" onClick="videoClose(this)"><b>&times;&nbsp;&nbsp;</b></button><div class="videoModal">' + getSingleVideoHtml(videoId) + '</div>';
+  }
+
+  element.insertAdjacentHTML('afterbegin', html);
+  element.classList.toggle('videoShowAnim', true);
 }
 
-function getPlaylistHtml(playlistId, videoId){
-	return `<iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?si=${videoId}&amp;list=${playlistId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`
+function videoClose(idOwnerElement) {
+  var element = document.getElementById(idOwnerElement.value);
+  element.classList.toggle('videoShowAnim', false);
+
+  while (element.firstChild) {
+    element.removeChild(element.firstChild);
+  }
 }
 
-function getSingleVideoHtml(videoId){
-	return `<iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`
+function getPlaylistHtml(playlistId, videoId) {
+  return '<iframe src="https://www.youtube.com/embed/videoseries?si=' + videoId + '&amp;list=' + playlistId + '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
 }
 
+function getSingleVideoHtml(videoId) {
+  return '<iframe src="https://www.youtube.com/embed/' + videoId + '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
+}
 </script>
 </body>
 </html>
