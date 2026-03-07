@@ -6,7 +6,6 @@
 html {
   box-sizing: border-box;
   width: 100%;
-  overflow-x: hidden;
 }
 
 *, *::before, *::after {
@@ -15,8 +14,6 @@ html {
 
 body {
   font-family: Roboto, sans-serif;
-  overflow-y: scroll;
-  overflow-x: hidden;
   margin: 0;
   background: #f6f7f8;
   color: rgb(0 0 0 / 0.88);
@@ -34,10 +31,9 @@ li {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: linear-gradient(180deg, rgb(252 252 252 / 0.98), rgb(248 248 248 / 0.96));
-  backdrop-filter: blur(10px);
+  background: #fafafa;
   border-bottom: 1px solid rgb(0 0 0 / 0.12);
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.035);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.06);
 }
 
 .headerInner,
@@ -140,14 +136,13 @@ li {
 }
 
 .tagPanel {
-  overflow: auto;
-  max-height: 280px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: min(280px, 40vh);
   opacity: 1;
   transition: max-height 0.2s ease, opacity 0.2s ease, padding 0.2s ease;
   margin: 6px 0;
   padding: 4px 0 2px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 
 .tagPanel.collapsed {
@@ -157,10 +152,6 @@ li {
   padding-bottom: 0;
 }
 
-.tagPanel::-webkit-scrollbar {
-  display: none;
-}
-
 #tagBox {
   list-style-type: none;
   display: flex;
@@ -168,6 +159,13 @@ li {
   gap: 8px 10px;
   padding: 0;
   margin: 0;
+}
+
+#videoBox {
+  list-style-type: none;
+  padding-left: 0;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 #results {
@@ -187,6 +185,7 @@ li {
 }
 
 .main-content {
+  overflow: visible;
   padding: 16px 0 24px;
 }
 
@@ -413,24 +412,9 @@ li {
 }
 
 @media (max-width: 720px) {
-  html,
-  body {
-    height: 100dvh;
-    overflow: hidden;
-  }
-
-  body {
-    display: flex;
-    flex-direction: column;
-  }
-
   .headerInner,
   .main-content {
     width: calc(100% - 16px);
-  }
-
-  #appHeader {
-    flex: 0 0 auto;
   }
 
   .headerTopRow {
@@ -450,17 +434,9 @@ li {
   }
 
   .tagPanel {
-    max-height: 220px;
+    max-height: 180px;
   }
 
-  .main-content {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
-  }
 }
 </style>
 <title>cobweb</title>
