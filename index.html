@@ -5,6 +5,8 @@
 <style>
 html {
   box-sizing: border-box;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 *, *::before, *::after {
@@ -14,6 +16,7 @@ html {
 body {
   font-family: Roboto, sans-serif;
   overflow-y: scroll;
+  overflow-x: hidden;
   margin: 0;
   background: #f6f7f8;
   color: rgb(0 0 0 / 0.88);
@@ -64,12 +67,14 @@ li {
   flex-direction: column;
   gap: 10px;
   flex: 1 1 auto;
+  min-width: 0;
 }
 
 .searchTools {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 
 .searchContainer {
@@ -169,6 +174,16 @@ li {
   list-style-type: none;
   padding-left: 0;
   margin: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+#results a,
+#results small,
+#results sup,
+#output {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .main-content {
@@ -398,9 +413,24 @@ li {
 }
 
 @media (max-width: 720px) {
+  html,
+  body {
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
   .headerInner,
   .main-content {
     width: calc(100% - 16px);
+  }
+
+  #appHeader {
+    flex: 0 0 auto;
   }
 
   .headerTopRow {
@@ -421,6 +451,15 @@ li {
 
   .tagPanel {
     max-height: 220px;
+  }
+
+  .main-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
   }
 }
 </style>
