@@ -1453,6 +1453,12 @@ function onGlobalShortcutKeyDown(event) {
   }
 
   if (key === 'Enter' && event.ctrlKey) {
+    if (selectedResultIndex !== -1) {
+      event.preventDefault();
+      openSelectedResult();
+      return;
+    }
+
     var rawInput = document.getElementById('searchInput').value;
 
     if (rawInput.length > 0)
