@@ -927,10 +927,10 @@ function updateResults(shouldRecordHistory, updateFromSearchInput) {
   });
 
   ul.insertAdjacentHTML('beforeEnd', liHTML);
-  restoreSelectedResult(previousSelectedUrl, previousSelectedIndex);
 
   showAllTags();
   updateSearchPills(shouldRecordHistory);
+  restoreSelectedResult(previousSelectedUrl, previousSelectedIndex);
 
   if (updateFromSearchInput) {
     clearTimeout(updateSearchTextHistoryTimer);
