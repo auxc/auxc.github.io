@@ -302,11 +302,6 @@ li {
   max-width: 100%;
 }
 
-.extraResultContent.extraResultContentPlaylist,
-.videoModal.videoModalPlaylist {
-  width: min(100%, 860px);
-}
-
 .videoShowAnim {
   animation: fadeIn 0.3s cubic-bezier(0.32, 0, 0.67, 0);
 }
@@ -548,7 +543,7 @@ const SORTING_OLDEST = 2;
 
 var sortingMode = SORTING_RELEVANCE;
 
-var URL_INDEX = 0;
+var URL = 0;
 var NAME = 1;
 var DESCRIPTION = 2;
 var CATEGORY = 3;
@@ -837,7 +832,7 @@ function updateResults(shouldRecordHistory, updateFromSearchInput) {
       var flatPenalty = 0;
 
       switch (wordIndex) {
-        case URL_INDEX:
+        case URL:
           penaltyMultiplier = 100;
           break;
         case NAME:
@@ -1243,7 +1238,7 @@ function getResultString(rawResult, resultIndex) {
     var word = stripParentheses(resultWords[i], ['(', ')']);
 
     switch (i) {
-      case URL_INDEX:
+      case URL:
         urlValue = word;
         break;
       case NAME:
@@ -1276,7 +1271,7 @@ function getResultString(rawResult, resultIndex) {
 
   if (embedInfo.success) {
     extraButtonHtml = embedInfo.buttonHtml;
-    extraContentHtml = '<div class="extraResultContent' + (embedInfo.isPlaylist ? ' extraResultContentPlaylist' : '') + '" id="' + embedInfo.id + '"></div>';
+    extraContentHtml = '<div class="extraResultContent" id="' + embedInfo.id + '"></div>';
   }
 
   var archiveLinkHtml = '';
@@ -1500,89 +1495,46 @@ function onSearchInputKeyDown(event) {
     updateResults(true);
 }
 
-function getYouTubeEmbedDescriptor(videoId, playlistId, playlistIndex) {
-  var payload = videoId || '';
-  var hasPlaylist = Boolean(playlistId);
-
-  if (playlistId)
-    payload += '@' + playlistId;
-
-  if (playlistId && playlistIndex)
-    payload += '@' + playlistIndex;
-
-  return {
-    success: true,
-    isPlaylist: hasPlaylist,
-    buttonHtml: '<button type="button" class="videoButton" value="' + payload + '" onClick="videoPopup(this)">&#x1F4FA;</button>',
-    id: payload
-  };
-}
-
-function parseYouTubeEmbedPayload(payload) {
-  var separatorIndex = payload.indexOf('@');
-  var parts;
-
-  if (separatorIndex === -1) {
+function tryGetEmbedHTML(urlValue) {
+  if (urlValue.includes('youtu.be')) {
+    var shortVideoId = urlValue.split('be/')[1];
     return {
-      videoId: payload,
-      playlistId: '',
-      playlistIndex: ''
+      success: true,
+      buttonHtml: '<button type="button" class="videoButton" value="' + shortVideoId + '" onClick="videoPopup(this)">&#x1F4FA;</button>',
+      id: shortVideoId
     };
   }
 
-  parts = payload.split('@');
-
-  return {
-    videoId: parts[0] || '',
-    playlistId: parts[1] || '',
-    playlistIndex: parts[2] || ''
-  };
-}
-
-function tryGetEmbedHTML(urlValue) {
-  var parsedUrl;
-
-  try {
-    parsedUrl = new window.URL(urlValue);
-  } catch (error) {
-    return { success: false };
+  if (urlValue.includes('youtube.com/playlist')) {
+    var playlistBits = urlValue.split('list=')[1].split('&si=');
+    var playlistId = playlistBits[0];
+    var playlistVideoId = playlistBits[1];
+    return {
+      success: true,
+      buttonHtml: '<button type="button" class="videoButton" value="' + playlistVideoId + '@' + playlistId + '" onClick="videoPopup(this)">&#x1F4FA;</button>',
+      id: playlistVideoId + '@' + playlistId
+    };
   }
 
-  var hostname = parsedUrl.hostname.replace(/^www\./, '');
-  var pathname = parsedUrl.pathname;
+  if (urlValue.includes('youtube.com/watch')) {
+    var queryBits = urlValue.split('v=')[1];
+    var queryParts = queryBits.split('&list=');
+    var watchVideoId = queryParts[0];
+    var watchPlaylistId = queryParts[1];
 
-  if (hostname === 'youtu.be') {
-    var shortVideoId = pathname.replace(/^\/+/, '').split('/')[0];
+    if (watchPlaylistId) {
+      return {
+        success: true,
+        buttonHtml: '<button type="button" class="videoButton" value="' + watchVideoId + '@' + watchPlaylistId + '" onClick="videoPopup(this)">&#x1F4FA;</button>',
+        id: watchVideoId + '@' + watchPlaylistId
+      };
+    }
 
-    if (shortVideoId)
-      return getYouTubeEmbedDescriptor(shortVideoId, '', '');
-
-    return { success: false };
-  }
-
-  if (hostname !== 'youtube.com' && hostname !== 'm.youtube.com' && hostname !== 'music.youtube.com')
-    return { success: false };
-
-  if (pathname === '/playlist') {
-    var playlistId = parsedUrl.searchParams.get('list');
-    var playlistIndex = parsedUrl.searchParams.get('index');
-
-    if (playlistId)
-      return getYouTubeEmbedDescriptor('', playlistId, playlistIndex);
-
-    return { success: false };
-  }
-
-  if (pathname === '/watch') {
-    var watchVideoId = parsedUrl.searchParams.get('v');
-    var watchPlaylistId = parsedUrl.searchParams.get('list');
-    var watchPlaylistIndex = parsedUrl.searchParams.get('index');
-
-    if (watchPlaylistId)
-      return getYouTubeEmbedDescriptor(watchVideoId, watchPlaylistId, watchPlaylistIndex);
-
-    if (watchVideoId)
-      return getYouTubeEmbedDescriptor(watchVideoId, '', '');
+    return {
+      success: true,
+      buttonHtml: '<button type="button" class="videoButton" value="' + watchVideoId + '" onClick="videoPopup(this)">&#x1F4FA;</button>',
+      id: watchVideoId
+    };
   }
 
   return { success: false };
@@ -1594,17 +1546,15 @@ function videoPopup(idOwnerElement) {
   if (element.childNodes.length > 0)
     return;
 
-  var embedInfo = parseYouTubeEmbedPayload(idOwnerElement.value || '');
-  var videoId = embedInfo.videoId;
-  var playlist = embedInfo.playlistId;
-  var playlistIndex = embedInfo.playlistIndex;
-  var modalClassName = playlist ? 'videoModal videoModalPlaylist' : 'videoModal';
+  var valueParts = idOwnerElement.value.split('@');
+  var videoId = valueParts[0];
+  var playlist = valueParts[1];
   var html = '';
 
   if (playlist) {
-    html = '<button class="videoCloseButton" value="' + idOwnerElement.value + '" onClick="videoClose(this)"><b>&times;&nbsp;&nbsp;</b></button><div class="' + modalClassName + '">' + getPlaylistHtml(playlist, videoId, playlistIndex) + '</div>';
+    html = '<button class="videoCloseButton" value="' + idOwnerElement.value + '" onClick="videoClose(this)"><b>&times;&nbsp;&nbsp;</b></button><div class="videoModal">' + getPlaylistHtml(playlist, videoId) + '</div>';
   } else {
-    html = '<button class="videoCloseButton" value="' + idOwnerElement.value + '" onClick="videoClose(this)"><b>&times;&nbsp;&nbsp;</b></button><div class="' + modalClassName + '">' + getSingleVideoHtml(videoId) + '</div>';
+    html = '<button class="videoCloseButton" value="' + idOwnerElement.value + '" onClick="videoClose(this)"><b>&times;&nbsp;&nbsp;</b></button><div class="videoModal">' + getSingleVideoHtml(videoId) + '</div>';
   }
 
   element.insertAdjacentHTML('afterbegin', html);
@@ -1620,84 +1570,12 @@ function videoClose(idOwnerElement) {
   }
 }
 
-function getYouTubePlayerQueryString(extraParams) {
-  var params = new URLSearchParams();
-  var origin = window.location.origin;
-
-  params.set('enablejsapi', '1');
-  params.set('playsinline', '1');
-
-  if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
-    params.set('origin', origin);
-    params.set('widget_referrer', window.location.href);
-  }
-
-  if (extraParams) {
-    Object.keys(extraParams).forEach(function(key) {
-      var value = extraParams[key];
-
-      if (value !== undefined && value !== null && value !== '')
-        params.set(key, value);
-    });
-  }
-
-  return params.toString().replaceAll('&', '&amp;');
-}
-
-function getYouTubeWatchUrl(videoId, playlistId, playlistIndex) {
-  var params = new URLSearchParams();
-
-  if (videoId)
-    params.set('v', videoId);
-
-  if (playlistId)
-    params.set('list', playlistId);
-
-  if (playlistIndex)
-    params.set('index', playlistIndex);
-
-  if (videoId)
-    return 'https://www.youtube.com/watch?' + params.toString();
-
-  return 'https://www.youtube.com/playlist?' + params.toString();
-}
-
-function getYouTubeEmbedUnavailableHtml(videoId, playlistId, playlistIndex) {
-  var watchUrl = getYouTubeWatchUrl(videoId, playlistId, playlistIndex);
-
-  return '<div class="videoModal"><div style="padding: 14px 16px; color: rgb(255 255 255 / 0.92); line-height: 1.45;">YouTube now requires an HTTP referrer for embedded playback. Open this page through http(s) to use inline embeds, or open the video directly.<br><br><a href="' + watchUrl + '" target="_blank" rel="noopener" style="color: #fff; font-weight: 700;">Open on YouTube</a></div></div>';
-}
-
-function getPlaylistEmbedIndex(playlistIndex) {
-  var parsedIndex = parseInt(playlistIndex, 10);
-
-  if (!Number.isFinite(parsedIndex) || parsedIndex <= 0)
-    return '';
-
-  return String(parsedIndex - 1);
-}
-
-function getPlaylistHtml(playlistId, videoId, playlistIndex) {
-  var embedSrc;
-  var embedIndex = getPlaylistEmbedIndex(playlistIndex);
-
-  if (window.location.protocol !== 'http:' && window.location.protocol !== 'https:')
-    return getYouTubeEmbedUnavailableHtml(videoId, playlistId, playlistIndex);
-
-  embedSrc = 'https://www.youtube.com/embed?' + getYouTubePlayerQueryString({
-    listType: 'playlist',
-    list: playlistId,
-    index: embedIndex
-  });
-
-  return '<iframe src="' + embedSrc + '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
+function getPlaylistHtml(playlistId, videoId) {
+  return '<iframe src="https://www.youtube.com/embed/videoseries?si=' + videoId + '&amp;list=' + playlistId + '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
 }
 
 function getSingleVideoHtml(videoId) {
-  if (window.location.protocol !== 'http:' && window.location.protocol !== 'https:')
-    return getYouTubeEmbedUnavailableHtml(videoId, '', '');
-
-  return '<iframe src="https://www.youtube.com/embed/' + encodeURIComponent(videoId) + '?' + getYouTubePlayerQueryString() + '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
+  return '<iframe src="https://www.youtube.com/embed/' + videoId + '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
 }
 </script>
 </body>
