@@ -302,6 +302,11 @@ li {
   max-width: 100%;
 }
 
+.extraResultContent.extraResultContentPlaylist,
+.videoModal.videoModalPlaylist {
+  width: min(100%, 860px);
+}
+
 .videoShowAnim {
   animation: fadeIn 0.3s cubic-bezier(0.32, 0, 0.67, 0);
 }
@@ -1271,7 +1276,7 @@ function getResultString(rawResult, resultIndex) {
 
   if (embedInfo.success) {
     extraButtonHtml = embedInfo.buttonHtml;
-    extraContentHtml = '<div class="extraResultContent" id="' + embedInfo.id + '"></div>';
+    extraContentHtml = '<div class="extraResultContent' + (embedInfo.isPlaylist ? ' extraResultContentPlaylist' : '') + '" id="' + embedInfo.id + '"></div>';
   }
 
   var archiveLinkHtml = '';
@@ -1497,6 +1502,7 @@ function onSearchInputKeyDown(event) {
 
 function getYouTubeEmbedDescriptor(videoId, playlistId, playlistIndex) {
   var payload = videoId || '';
+  var hasPlaylist = Boolean(playlistId);
 
   if (playlistId)
     payload += '@' + playlistId;
@@ -1506,6 +1512,7 @@ function getYouTubeEmbedDescriptor(videoId, playlistId, playlistIndex) {
 
   return {
     success: true,
+    isPlaylist: hasPlaylist,
     buttonHtml: '<button type="button" class="videoButton" value="' + payload + '" onClick="videoPopup(this)">&#x1F4FA;</button>',
     id: payload
   };
@@ -1591,12 +1598,13 @@ function videoPopup(idOwnerElement) {
   var videoId = embedInfo.videoId;
   var playlist = embedInfo.playlistId;
   var playlistIndex = embedInfo.playlistIndex;
+  var modalClassName = playlist ? 'videoModal videoModalPlaylist' : 'videoModal';
   var html = '';
 
   if (playlist) {
-    html = '<button class="videoCloseButton" value="' + idOwnerElement.value + '" onClick="videoClose(this)"><b>&times;&nbsp;&nbsp;</b></button><div class="videoModal">' + getPlaylistHtml(playlist, videoId, playlistIndex) + '</div>';
+    html = '<button class="videoCloseButton" value="' + idOwnerElement.value + '" onClick="videoClose(this)"><b>&times;&nbsp;&nbsp;</b></button><div class="' + modalClassName + '">' + getPlaylistHtml(playlist, videoId, playlistIndex) + '</div>';
   } else {
-    html = '<button class="videoCloseButton" value="' + idOwnerElement.value + '" onClick="videoClose(this)"><b>&times;&nbsp;&nbsp;</b></button><div class="videoModal">' + getSingleVideoHtml(videoId) + '</div>';
+    html = '<button class="videoCloseButton" value="' + idOwnerElement.value + '" onClick="videoClose(this)"><b>&times;&nbsp;&nbsp;</b></button><div class="' + modalClassName + '">' + getSingleVideoHtml(videoId) + '</div>';
   }
 
   element.insertAdjacentHTML('afterbegin', html);
