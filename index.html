@@ -230,6 +230,16 @@ li {
   max-height: var(--tag-expanded-max-height);
 }
 
+.tagPanel.tagPanelEmpty {
+  height: 0;
+  min-height: 0;
+  max-height: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
 .tagListViewport {
   height: 100%;
   overflow: hidden;
@@ -756,7 +766,7 @@ li {
         </div>
       </div>
     </div>
-    <div id="tagPanel" class="tagPanel">
+    <div id="tagPanel" class="tagPanel tagPanelEmpty">
       <div class="tagListViewport" id="tagListViewport" tabindex="0" aria-label="Available tags">
         <ul id="tagBox"></ul>
       </div>
@@ -1458,8 +1468,17 @@ function refreshTagMoreButton() {
   var tagList = document.getElementById('tagBox');
   var button = document.getElementById('tagMoreButton');
   var wasExpanded = panel.classList.contains('tagPanelExpanded');
+  var isEmpty = tagList.childElementCount === 0;
+
+  panel.classList.toggle('tagPanelEmpty', isEmpty);
 
   panel.classList.remove('hasMoreTags');
+
+  if (isEmpty) {
+    button.hidden = true;
+    scheduleTagScrollStripRefresh();
+    return;
+  }
 
   var pillHeight = parseFloat(
     window.getComputedStyle(panel).getPropertyValue('--tag-pill-height')
