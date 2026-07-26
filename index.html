@@ -2338,7 +2338,10 @@ function onSearchInputKeyDown(event) {
   }
 
   if (key === 'Backspace') {
-    var shouldDelete = event.target.selectionStart == 0 && globalTags.length > 0;
+    var hasTextSelection = event.target.selectionStart !== event.target.selectionEnd;
+    var shouldDelete = !hasTextSelection &&
+      event.target.selectionStart == 0 &&
+      globalTags.length > 0;
 
     if (shouldDelete) {
       event.preventDefault();
