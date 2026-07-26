@@ -45,6 +45,7 @@ li {
 }
 
 .headerInner {
+  --search-border-color: rgb(0 0 0 / 0.7);
   padding: 12px 0 10px;
 }
 
@@ -69,6 +70,7 @@ li {
 }
 
 .searchTools {
+  --search-control-height: 36px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -79,7 +81,8 @@ li {
   display: flex;
   align-items: stretch;
   position: relative;
-  min-height: 42px;
+  height: var(--search-control-height);
+  min-height: var(--search-control-height);
   margin: 0;
   white-space: nowrap;
   gap: 0;
@@ -88,15 +91,14 @@ li {
 
 #searchInput {
   flex-grow: 1;
-  min-width: 0;
+  min-width: 8ch;
   padding: 8px 40px 8px 12px;
   font-size: 15px;
-  border: 1px solid rgb(0 0 0 / 0.5);
+  border: 1px solid var(--search-border-color);
   border-left: 0;
   box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
   border-radius: 0;
-  border-top-right-radius: 16px;
-  border-bottom-right-radius: 16px;
+  border-top-right-radius: 6px;
 }
 
 #searchInput:focus {
@@ -104,14 +106,54 @@ li {
   box-shadow: inset 0 0 3.5px rgb(0 0 0 / 0.133);
 }
 
+.searchClearButton {
+  display: inline-flex;
+  flex: 0 0 var(--search-control-height);
+  align-items: center;
+  justify-content: center;
+  width: var(--search-control-height);
+  height: 100%;
+  padding: 0 0 2px;
+  color: rgb(0 0 0 / 0.66);
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  background: #f8f9fa;
+  border: 1px solid var(--search-border-color);
+  border-left: 0;
+  border-radius: 0;
+  border-top-right-radius: 6px;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
+  cursor: pointer;
+}
+
+.searchClearButton:hover,
+.searchClearButton:focus-visible {
+  color: rgb(0 0 0 / 0.9);
+  background: #eceff1;
+  outline: none;
+}
+
+.searchClearButton[hidden] {
+  display: none;
+}
+
+.searchContainer.hasClearableQuery #searchInput {
+  border-top-right-radius: 0;
+}
+
 .searchBuildIndicator {
   position: absolute;
   top: 50%;
-  right: 13px;
+  right: calc(var(--search-control-height) + 13px);
   width: 16px;
   height: 16px;
   transform: translateY(-50%);
   pointer-events: none;
+}
+
+.searchContainer:not(.hasClearableQuery) .searchBuildIndicator {
+  right: 13px;
 }
 
 .searchBuildIndicator[hidden] {
@@ -141,38 +183,23 @@ li {
   border: 0;
 }
 
-.filterToggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 10ch;
-  background-color: #f8f9fa;
-  padding: 7px 12px;
-  font-size: 13px;
-  border: 1px solid rgb(0 0 0 / 0.2);
-  border-radius: 999px;
-  cursor: pointer;
-  color: rgb(0 0 0 / 0.78);
-  box-shadow: 0 2px 5px rgb(0 0 0 / 0.08);
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.filterToggle:hover {
-  background-color: #eceff1;
-}
-
-.filterToggle[aria-expanded="true"] {
-  background-color: #111827;
-  border-color: #111827;
-  color: #fff;
-  box-shadow: 0 3px 10px rgb(17 24 39 / 0.18);
-}
-
 #searchContainerId {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-height: 0;
+  flex: 0 1 auto;
+  align-items: stretch;
+  max-width: 60%;
+  min-width: 0;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-top: 1px solid var(--search-border-color);
+  border-bottom: 1px solid var(--search-border-color);
+  box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
+  scrollbar-width: none;
+}
+
+#searchContainerId::-webkit-scrollbar {
+  display: none;
 }
 
 #searchContainerId:empty {
@@ -180,29 +207,139 @@ li {
 }
 
 .tagPanel {
-  overflow-y: auto;
-  overflow-x: hidden;
-  max-height: min(280px, 40vh);
+  --tag-pill-height: 29px;
+  --tag-row-gap: 8px;
+  --tag-drawer-height: 35px;
+  --tag-expanded-max-height: min(280px, 40vh);
+  position: relative;
+  overflow: hidden;
+  height: var(--tag-drawer-height);
   opacity: 1;
-  transition: max-height 0.2s ease, opacity 0.2s ease, padding 0.2s ease;
   margin: 6px 0;
   padding: 4px 0 2px;
+  contain: layout paint;
 }
 
-.tagPanel.collapsed {
-  max-height: 0;
-  opacity: 0;
-  padding-top: 0;
-  padding-bottom: 0;
+.tagPanel.hasMoreTags {
+  padding-right: 72px;
+}
+
+.tagPanel.tagPanelExpanded {
+  height: auto;
+  min-height: var(--tag-drawer-height);
+  max-height: var(--tag-expanded-max-height);
+}
+
+.tagListViewport {
+  height: 100%;
+  overflow: hidden;
+}
+
+.tagPanel.tagPanelExpanded .tagListViewport {
+  height: auto;
+  max-height: calc(var(--tag-expanded-max-height) - 6px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+}
+
+.tagListViewport::-webkit-scrollbar {
+  display: none;
+}
+
+.tagListViewport:focus-visible {
+  outline: 1px solid rgb(0 0 0 / 0.28);
+  outline-offset: -1px;
+}
+
+.tagScrollTrack {
+  position: absolute;
+  top: calc(4px + var(--tag-pill-height) + var(--tag-row-gap));
+  right: 3px;
+  bottom: 3px;
+  z-index: 2;
+  width: 6px;
+  min-height: 24px;
+  overflow: hidden;
+  background: rgb(0 0 0 / 0.08);
+  border: 1px solid rgb(0 0 0 / 0.08);
+  border-radius: 999px;
+  touch-action: none;
+}
+
+.tagScrollTrack[hidden] {
+  display: none;
+}
+
+.tagScrollThumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 20px;
+  background: linear-gradient(180deg, rgb(0 0 0 / 0.58), rgb(0 0 0 / 0.34));
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.2);
+  transform: translateY(0);
+}
+
+.tagScrollThumb:hover {
+  background: linear-gradient(180deg, rgb(0 0 0 / 0.72), rgb(0 0 0 / 0.46));
 }
 
 #tagBox {
   list-style-type: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 10px;
+  gap: var(--tag-row-gap) 10px;
   padding: 0;
   margin: 0;
+}
+
+.tagMoreButton {
+  position: absolute;
+  top: 4px;
+  right: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 52px;
+  height: var(--tag-pill-height);
+  padding: 4px 9px;
+  color: rgb(0 0 0 / 0.72);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  background: linear-gradient(180deg, #fff 0%, #f1f3f4 52%, #dfe3e6 100%);
+  border: 1px solid var(--search-border-color);
+  border-radius: 0 0 6px 6px;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.9),
+    inset 0 -1px 1px rgb(0 0 0 / 0.16),
+    -10px 0 12px #fafafa;
+  cursor: pointer;
+}
+
+.tagMoreButton:hover,
+.tagMoreButton:focus-visible {
+  color: rgb(0 0 0 / 0.9);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 1),
+    inset 0 -1px 1px rgb(0 0 0 / 0.18),
+    -10px 0 12px #fafafa;
+  outline: none;
+}
+
+.tagMoreButton:active,
+.tagMoreButton[aria-expanded="true"] {
+  box-shadow:
+    inset 0 2px 3px rgb(0 0 0 / 0.2),
+    inset 0 -1px 0 rgb(255 255 255 / 0.55),
+    -10px 0 12px #fafafa;
+}
+
+.tagMoreButton[hidden] {
+  display: none;
 }
 
 #videoBox {
@@ -255,11 +392,10 @@ li {
 
 #output {
   font-family: monospace;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
   text-align: center;
   color: rgb(0 0 0 / 0.65);
+  text-shadow: 0 1px 1px rgb(255 255 255 / 0.85);
   font-size: 12px;
   line-height: 1.3;
   padding: 0;
@@ -276,11 +412,12 @@ li {
   text-shadow: 0 1px 3px rgb(64 64 64);
   font-weight: 500;
   font-size: 14px;
-  line-height: 250%;
+  line-height: 1.35;
   border: 1px solid rgb(0 0 0 / 0.3);
-  border-radius: 10px;
+  border-radius: 0 0 6px 6px;
   box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
-  padding: 5px 7px;
+  height: var(--tag-pill-height);
+  padding: 4px 7px;
   display: inline-flex;
   align-items: center;
 }
@@ -294,30 +431,126 @@ li {
 }
 
 .tagSearchPill {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
   white-space: nowrap;
   text-decoration: none;
   color: rgb(255 255 255);
   text-shadow: 0 1px 3px rgb(64 64 64);
   font-weight: 700;
-  border-style: solid;
-  border-top: 1px solid rgb(0 0 0 / 0.3);
-  border-bottom: 1px solid rgb(0 0 0 / 0.3);
+  border: 0;
   border-right: 1px solid rgb(0 0 0 / 0.3);
-  border-left: 0;
-  box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
-  padding: 7px 10px;
-  border-radius: 999px;
+  height: 100%;
+  padding: 0 9px;
+  border-radius: 0;
   margin: 0;
   cursor: pointer;
 }
 
 .mainDropdown {
-  padding: 3.5px 10px 15px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  background: linear-gradient(180deg, #fff 0%, #f1f3f4 52%, #dfe3e6 100%);
   border-radius: 0;
-  border-top-left-radius: 16px;
-  border-bottom-left-radius: 16px;
-  border: 1px double rgb(0 0 0 / 0.4);
+  border-top-left-radius: 6px;
+  border: 1px double var(--search-border-color);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.9),
+    inset 0 -1px 1px rgb(0 0 0 / 0.16),
+    0 2px 4px rgb(0 0 0 / 0.14);
   min-width: 52px;
+  cursor: pointer;
+}
+
+.mainDropdown:hover,
+.mainDropdown:focus-visible {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 1),
+    inset 0 -1px 1px rgb(0 0 0 / 0.18),
+    0 3px 6px rgb(0 0 0 / 0.18);
+  outline: none;
+}
+
+.mainDropdown:active,
+.mainDropdown[aria-expanded="true"] {
+  box-shadow:
+    inset 0 2px 3px rgb(0 0 0 / 0.2),
+    inset 0 -1px 0 rgb(255 255 255 / 0.55),
+    0 1px 2px rgb(0 0 0 / 0.12);
+}
+
+.mainButtonIcon,
+.mainMenuItemIcon {
+  display: block;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1.5px rgb(0 0 0 / 0.28));
+}
+
+.mainMenu {
+  position: static;
+  display: flex;
+  align-items: stretch;
+  flex: 0 0 auto;
+}
+
+.mainMenuPanel {
+  position: absolute;
+  top: calc(100% - 1px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  display: block;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  padding: 7px;
+  overflow: hidden;
+  white-space: normal;
+  background: #fafafa;
+  border: 1px solid var(--search-border-color);
+  border-radius: 0;
+  box-shadow: 0 10px 24px rgb(0 0 0 / 0.16);
+}
+
+.mainMenuPanel[hidden] {
+  display: none;
+}
+
+.searchContainer.mainMenuOpen {
+  z-index: 70;
+}
+
+.mainMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  color: rgb(0 0 0 / 0.78);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.mainMenuItem:hover,
+.mainMenuItem:focus-visible {
+  outline: none;
+}
+
+.mainMenuItem:hover > span,
+.mainMenuItem:focus-visible > span {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .mainDropdownIdleAnim {
@@ -365,24 +598,6 @@ li {
   background-color: transparent;
   color: rgb(255 255 255);
   border: 1px solid rgb(0 0 0 / 0.01);
-}
-
-.logo:hover, logo:active {
-  animation: pressDown 0.1s linear 1;
-  animation-fill-mode: forwards;
-  color: rgb(255 255 255);
-  text-shadow: 0 1px 6px rgb(0 0 0 / 0.3);
-  display: inline-block;
-}
-
-.loader {
-  border: 6px double #f3f3f3;
-  border-top: 6px solid rgb(0 0 0 / 0.66);
-  border-radius: 50%;
-  width: 33px;
-  height: 33px;
-  animation: spin 0.33s linear infinite;
-  margin: 12px auto;
 }
 
 .modal-bar {
@@ -503,10 +718,6 @@ li {
     width: 100%;
   }
 
-  .tagPanel {
-    max-height: 180px;
-  }
-
 }
 </style>
 <title>cobweb</title>
@@ -517,32 +728,44 @@ li {
 <div id="appHeader">
   <div class="headerInner">
     <div class="headerMetaRow">
-      <small id="output"><a href="changelog.html">v0.6</a> &#x1F570;&#xFE0F; <a href="index.html">cobweb</a> &middot; curios found by 5412177 &amp; friends<span id="indexMeta"></span></small>
+      <small id="output">v0.7 <a href="index.html">cobweb</a> &middot; curios found by 5412177 &amp; friends<span id="indexMeta"></span></small>
     </div>
     <div class="headerTopRow">
       <div class="searchShell">
         <div class="searchTools">
           <p class="searchContainer">
-            <button class="mainDropdown" id="mainButton" onclick="resetSearch()">
-              <span class="logo">&#x1F570;&#xFE0F;</span>
-            </button>
+            <span class="mainMenu" id="mainMenu">
+              <button type="button" class="mainDropdown" id="mainButton" aria-label="Open menu" aria-haspopup="menu" aria-expanded="false" aria-controls="mainMenuPanel">
+                <img class="mainButtonIcon" src="icons/folder_s.png" alt="">
+              </button>
+              <span class="mainMenuPanel" id="mainMenuPanel" role="menu" hidden>
+                <button type="button" class="mainMenuItem" id="openRandomButton" role="menuitem">
+                  <img class="mainMenuItemIcon" src="icons/globe_d.png" alt="">
+                  <span>Open random</span>
+                </button>
+              </span>
+            </span>
+            <span id="searchContainerId"></span>
             <input id="searchInput" placeholder="type to begin" aria-controls="results">
+            <button type="button" class="searchClearButton" id="clearSearchButton" aria-label="Clear search" hidden>&times;</button>
             <span class="searchBuildIndicator" id="searchBuildIndicator" aria-hidden="true" hidden>
               <span class="searchBuildSpinner"></span>
             </span>
             <span class="visuallyHidden" id="searchBuildStatus" role="status" aria-live="polite"></span>
           </p>
-          <button type="button" class="filterToggle" id="tagToggleButton" aria-expanded="false" onclick="toggleTagPanel()">
-            Tags
-          </button>
         </div>
-        <div id="searchContainerId"></div>
       </div>
     </div>
-    <div id="tagPanel" class="tagPanel collapsed">
-      <ul id="tagBox">
-        <li id="init_loader" class="loader"></li>
-      </ul>
+    <div id="tagPanel" class="tagPanel">
+      <div class="tagListViewport" id="tagListViewport" tabindex="0" aria-label="Available tags">
+        <ul id="tagBox"></ul>
+      </div>
+      <button type="button" class="tagMoreButton" id="tagMoreButton" aria-expanded="false" aria-controls="tagBox" hidden>
+        More
+      </button>
+      <span class="tagScrollTrack" id="tagScrollTrack" aria-hidden="true" hidden>
+        <span class="tagScrollThumb" id="tagScrollThumb"></span>
+      </span>
     </div>
   </div>
 </div>
@@ -589,12 +812,15 @@ var resultRenderIdleHandle = null;
 var resultRenderTimeoutHandle = null;
 var tagRenderIdleHandle = null;
 var tagRenderTimeoutHandle = null;
+var tagPanelResizeTimer = null;
+var tagScrollDrag = null;
+var tagScrollFrame = null;
 var renderedResultCount = 0;
 var selectedResultIndex = -1;
 var selectedResultUrl = null;
 var shouldScrollSelectedResultOnInitialLoad = false;
 
-const SEARCH_INPUT_DEBOUNCE_MS = 70;
+const SEARCH_INPUT_DEBOUNCE_MS = 180;
 const INITIAL_RESULT_BATCH_SIZE = 40;
 const RESULT_BATCH_SIZE = 60;
 
@@ -829,19 +1055,15 @@ function persistSearchState(state) {
 }
 
 function activateSearchState(state) {
-  var hadActiveSearch = activeSearch !== null;
-
   activeSearch = state;
   storedText = state.sourceText;
   searchDocuments = state.documents;
   miniSearch = state.index;
   allTags.clear();
   tagColorMap.clear();
+  globalCategoryMap.clear();
   document.getElementById('indexMeta').innerHTML = ' &middot; <a class="footerLink" href="searchdb.txt">index(' + searchDocuments.length + ')</a>';
-  showAllTags();
-
-  if (!hadActiveSearch)
-    toggleTagPanel(false);
+  showAllTags(false);
 
   updateResults(false);
 }
@@ -965,6 +1187,7 @@ function cancelProgressiveResultWork() {
 }
 
 function scheduleSearchInputUpdate() {
+  refreshClearSearchButton();
   cancelProgressiveResultWork();
   cancelScheduledSearchInputUpdate();
   document.getElementById('results').setAttribute('aria-busy', 'true');
@@ -998,7 +1221,23 @@ async function test() {
   input.addEventListener('keydown', onSearchInputKeyDown);
   input.addEventListener('compositionstart', onSearchInputCompositionStart);
   input.addEventListener('compositionend', onSearchInputCompositionEnd);
+  document.getElementById('clearSearchButton').addEventListener('click', resetSearch);
+  document.getElementById('tagMoreButton').addEventListener('click', function() {
+    var panel = document.getElementById('tagPanel');
+    var shouldExpand = !panel.classList.contains('tagPanelExpanded');
+    setTagPanelExpanded(shouldExpand);
+    if (!shouldExpand)
+      refreshTagMoreButton();
+  });
+  initTagScrollStrip();
   document.addEventListener('keydown', onGlobalShortcutKeyDown);
+
+  initMainMenu();
+
+  window.addEventListener('resize', function() {
+    clearTimeout(tagPanelResizeTimer);
+    tagPanelResizeTimer = setTimeout(refreshTagMoreButton, 100);
+  });
 
   window.addEventListener('popstate', function() {
     grabTagsFromURL();
@@ -1081,29 +1320,158 @@ function showModalBar(show) {
     modalBar.classList.add('hidden');
 }
 
-function toggleTagPanel(forceState) {
+function setTagPanelExpanded(shouldExpand) {
   var panel = document.getElementById('tagPanel');
-  var button = document.getElementById('tagToggleButton');
-  var shouldShow = forceState;
+  var button = document.getElementById('tagMoreButton');
+  var viewport = document.getElementById('tagListViewport');
+  var canExpand = !button.hidden && panel.classList.contains('hasMoreTags');
+  var isExpanded = shouldExpand && canExpand;
 
-  if (typeof shouldShow !== 'boolean')
-    shouldShow = panel.classList.contains('collapsed');
+  panel.classList.toggle('tagPanelExpanded', isExpanded);
+  button.textContent = isExpanded ? 'Less' : 'More';
+  button.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
 
-  panel.classList.toggle('collapsed', !shouldShow);
-  refreshTagToggleLabel();
-  button.setAttribute('aria-expanded', shouldShow ? 'true' : 'false');
+  if (!isExpanded)
+    viewport.scrollTop = 0;
+
+  scheduleTagScrollStripRefresh();
 }
 
-function refreshTagToggleLabel() {
-  var button = document.getElementById('tagToggleButton');
-  var count = document.getElementById('tagBox').childElementCount;
-  var label = 'Tags';
+function initTagScrollStrip() {
+  var panel = document.getElementById('tagPanel');
+  var viewport = document.getElementById('tagListViewport');
+  var track = document.getElementById('tagScrollTrack');
+  var thumb = document.getElementById('tagScrollThumb');
 
-  if (count > 0)
-    label += ' (' + count + ')';
+  viewport.addEventListener('scroll', scheduleTagScrollStripRefresh, { passive: true });
 
-  button.textContent = label;
-  button.setAttribute('aria-label', label);
+  panel.addEventListener('wheel', function(event) {
+    if (
+      event.ctrlKey ||
+      !panel.classList.contains('tagPanelExpanded') ||
+      viewport.scrollHeight <= viewport.clientHeight + 1 ||
+      event.deltaY === 0
+    )
+      return;
+
+    var deltaY = event.deltaY;
+    if (event.deltaMode === WheelEvent.DOM_DELTA_LINE)
+      deltaY *= 16;
+    else if (event.deltaMode === WheelEvent.DOM_DELTA_PAGE)
+      deltaY *= viewport.clientHeight;
+
+    viewport.scrollTop += deltaY;
+    event.preventDefault();
+  }, { passive: false });
+
+  track.addEventListener('pointerdown', function(event) {
+    if (track.hidden)
+      return;
+
+    var thumbRect = thumb.getBoundingClientRect();
+    tagScrollDrag = {
+      pointerId: event.pointerId,
+      offsetY: event.target === thumb
+        ? event.clientY - thumbRect.top
+        : thumbRect.height / 2
+    };
+
+    track.setPointerCapture(event.pointerId);
+    updateTagScrollFromPointer(event);
+    event.preventDefault();
+  });
+
+  track.addEventListener('pointermove', function(event) {
+    if (!tagScrollDrag || event.pointerId !== tagScrollDrag.pointerId)
+      return;
+
+    updateTagScrollFromPointer(event);
+    event.preventDefault();
+  });
+
+  var finishDrag = function(event) {
+    if (!tagScrollDrag || event.pointerId !== tagScrollDrag.pointerId)
+      return;
+
+    tagScrollDrag = null;
+  };
+
+  track.addEventListener('pointerup', finishDrag);
+  track.addEventListener('pointercancel', finishDrag);
+  track.addEventListener('lostpointercapture', finishDrag);
+}
+
+function updateTagScrollFromPointer(event) {
+  var viewport = document.getElementById('tagListViewport');
+  var track = document.getElementById('tagScrollTrack');
+  var thumb = document.getElementById('tagScrollThumb');
+  var trackRect = track.getBoundingClientRect();
+  var thumbHeight = thumb.offsetHeight;
+  var maxThumbTravel = Math.max(0, trackRect.height - thumbHeight);
+  var requestedTop = event.clientY - trackRect.top - tagScrollDrag.offsetY;
+  var thumbTop = Math.max(0, Math.min(maxThumbTravel, requestedTop));
+  var maxScroll = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
+
+  viewport.scrollTop = maxThumbTravel > 0
+    ? (thumbTop / maxThumbTravel) * maxScroll
+    : 0;
+}
+
+function scheduleTagScrollStripRefresh() {
+  if (tagScrollFrame !== null)
+    return;
+
+  tagScrollFrame = window.requestAnimationFrame(function() {
+    tagScrollFrame = null;
+    refreshTagScrollStrip();
+  });
+}
+
+function refreshTagScrollStrip() {
+  var panel = document.getElementById('tagPanel');
+  var viewport = document.getElementById('tagListViewport');
+  var track = document.getElementById('tagScrollTrack');
+  var thumb = document.getElementById('tagScrollThumb');
+  var maxScroll = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
+  var shouldShow = panel.classList.contains('tagPanelExpanded') && maxScroll > 1;
+
+  track.hidden = !shouldShow;
+  if (!shouldShow)
+    return;
+
+  var trackHeight = track.clientHeight;
+  var thumbHeight = Math.max(
+    20,
+    Math.min(trackHeight, Math.round(trackHeight * viewport.clientHeight / viewport.scrollHeight))
+  );
+  var maxThumbTravel = Math.max(0, trackHeight - thumbHeight);
+  var thumbTop = maxScroll > 0
+    ? Math.round((viewport.scrollTop / maxScroll) * maxThumbTravel)
+    : 0;
+
+  thumb.style.height = thumbHeight + 'px';
+  thumb.style.transform = 'translateY(' + thumbTop + 'px)';
+}
+
+function refreshTagMoreButton() {
+  var panel = document.getElementById('tagPanel');
+  var tagList = document.getElementById('tagBox');
+  var button = document.getElementById('tagMoreButton');
+  var wasExpanded = panel.classList.contains('tagPanelExpanded');
+
+  panel.classList.remove('hasMoreTags');
+
+  var pillHeight = parseFloat(
+    window.getComputedStyle(panel).getPropertyValue('--tag-pill-height')
+  ) || 29;
+  var needsMore = tagList.scrollHeight > pillHeight + 1;
+  var shouldShowButton = needsMore || wasExpanded;
+
+  panel.classList.toggle('hasMoreTags', shouldShowButton);
+  button.hidden = !shouldShowButton;
+  button.textContent = wasExpanded ? 'Less' : 'More';
+  button.setAttribute('aria-expanded', wasExpanded ? 'true' : 'false');
+  scheduleTagScrollStripRefresh();
 }
 
 function setURLParams(newParams, options) {
@@ -1156,6 +1524,7 @@ function grabSearchFromURL() {
   var sp = new URLSearchParams(window.location.search);
   var q = sp.get('q');
   inputEl.value = q || '';
+  refreshClearSearchButton();
 }
 
 function normalizeURLValue(urlValue) {
@@ -1174,12 +1543,121 @@ function grabSelectedResultFromURL() {
   selectedResultIndex = -1;
 }
 
+function setMainMenuOpen(shouldOpen, focusMenuItem) {
+  var button = document.getElementById('mainButton');
+  var panel = document.getElementById('mainMenuPanel');
+  var container = button.closest('.searchContainer');
+
+  panel.hidden = !shouldOpen;
+  container.classList.toggle('mainMenuOpen', shouldOpen);
+  button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+  button.setAttribute('aria-label', shouldOpen ? 'Close menu' : 'Open menu');
+
+  if (shouldOpen && focusMenuItem) {
+    var firstItem = panel.querySelector('[role="menuitem"]:not([disabled])');
+    if (firstItem)
+      firstItem.focus();
+  }
+}
+
+function initMainMenu() {
+  var menu = document.getElementById('mainMenu');
+  var button = document.getElementById('mainButton');
+  var panel = document.getElementById('mainMenuPanel');
+  var openRandomButton = document.getElementById('openRandomButton');
+
+  button.addEventListener('click', function() {
+    var shouldOpen = button.getAttribute('aria-expanded') !== 'true';
+    setMainMenuOpen(shouldOpen, shouldOpen);
+  });
+
+  button.addEventListener('keydown', function(event) {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setMainMenuOpen(true, true);
+    }
+  });
+
+  openRandomButton.addEventListener('click', function() {
+    setMainMenuOpen(false, false);
+    openRandomResult();
+  });
+
+  panel.addEventListener('keydown', function(event) {
+    var items = Array.prototype.slice.call(
+      panel.querySelectorAll('[role="menuitem"]:not([disabled])')
+    );
+    var currentIndex = items.indexOf(document.activeElement);
+
+    if (items.length === 0)
+      return;
+
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      var direction = event.key === 'ArrowDown' ? 1 : -1;
+      if (currentIndex === -1)
+        currentIndex = direction === 1 ? -1 : 0;
+      items[(currentIndex + direction + items.length) % items.length].focus();
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      items[0].focus();
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      items[items.length - 1].focus();
+    }
+  });
+
+  document.addEventListener('click', function(event) {
+    if (!menu.contains(event.target))
+      setMainMenuOpen(false, false);
+  });
+
+  menu.addEventListener('focusout', function(event) {
+    if (!menu.contains(event.relatedTarget))
+      setMainMenuOpen(false, false);
+  });
+
+  document.addEventListener('keydown', function(event) {
+    if (event.key !== 'Escape' || button.getAttribute('aria-expanded') !== 'true')
+      return;
+
+    event.preventDefault();
+    setMainMenuOpen(false, false);
+    button.focus();
+  });
+}
+
 function resetSearch() {
+  clearTimeout(updateSearchTextHistoryTimer);
+  updateSearchTextHistoryTimer = null;
   document.getElementById('searchInput').value = '';
   globalTags.length = 0;
+  refreshClearSearchButton();
   clearSelectedResult();
-  toggleTagPanel(false);
-  updateResults(true);
+  setURLParams({ q: null, tags: [], selected: null }, { push: true });
+  updateResults(false);
+}
+
+function refreshClearSearchButton() {
+  var input = document.getElementById('searchInput');
+  var button = document.getElementById('clearSearchButton');
+  var shouldShow = input.value.length > 0 || globalTags.length > 0;
+
+  button.hidden = !shouldShow;
+  button.closest('.searchContainer').classList.toggle('hasClearableQuery', shouldShow);
+}
+
+function openRandomResult() {
+  if (globalResults.length === 0)
+    return false;
+
+  var randomIndex = Math.floor(Math.random() * globalResults.length);
+  var randomResult = globalResults[randomIndex];
+  if (!randomResult || !randomResult.document || !randomResult.document.url)
+    return false;
+
+  window.location.href = randomResult.document.url;
+  return true;
 }
 
 function createResultFragment(startIndex, endIndex) {
@@ -1327,6 +1805,7 @@ function updateResults(shouldRecordHistory, updateFromSearchInput) {
   inputElement.value = searchTextToDisplay;
 
   var searchSansTags = filterStrings.join(' ').trim();
+  var hasActiveQuery = searchSansTags.length > 0 || anyTags;
   var quotedPhrases = getQuotedSearchPhrases(searchSansTags);
   var scoredArr;
 
@@ -1409,7 +1888,6 @@ function updateResults(shouldRecordHistory, updateFromSearchInput) {
     addTag(scoredMatch.document, globalCategoryMap);
   });
 
-  var showingAny = globalResults.length > 0;
   var initialResultCount = globalResults.length <= INITIAL_RESULT_BATCH_SIZE
     ? globalResults.length
     : INITIAL_RESULT_BATCH_SIZE;
@@ -1432,7 +1910,7 @@ function updateResults(shouldRecordHistory, updateFromSearchInput) {
     }, 500);
   }
 
-  document.getElementById('mainButton').classList.toggle('mainDropdownIdleAnim', showingAny);
+  document.getElementById('mainButton').classList.toggle('mainDropdownIdleAnim', hasActiveQuery);
   showModalBar(globalResults.length > 1 && !forceNewest);
 
   if (!/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent))
@@ -1654,7 +2132,10 @@ function stripParentheses(str, symbols) {
   return str;
 }
 
-function showAllTags() {
+function showAllTags(shouldRender) {
+  if (shouldRender === undefined)
+    shouldRender = true;
+
   if (allTags.size == 0) {
     searchDocuments.forEach(function(document) {
       addTag(document, allTags);
@@ -1682,10 +2163,18 @@ function showAllTags() {
   var counter = 0;
   sortedKeys.forEach(function(key) {
     var color01 = counter / sortedKeys.length;
-    var localCount = globalCategoryMap.size > 0 ? globalCategoryMap.get(key.name).val : key.count;
-    tagHtml += getTagLinkHtml(key.name + ':', key.name, String(localCount), color01, key.name) + ' ';
+    var bgColor = setTagColor(key.name, color01);
+
+    if (shouldRender) {
+      var localCount = globalCategoryMap.size > 0 ? globalCategoryMap.get(key.name).val : key.count;
+      tagHtml += getTagLinkHtml(key.name + ':', key.name, String(localCount), bgColor) + ' ';
+    }
+
     counter++;
   });
+
+  if (!shouldRender)
+    return;
 
   var tagList = document.getElementById('tagBox');
 
@@ -1696,7 +2185,7 @@ function showAllTags() {
   if (globalResults.length != 1 && sortedKeys.length > 0)
     tagList.insertAdjacentHTML('beforeend', tagHtml);
 
-  refreshTagToggleLabel();
+  refreshTagMoreButton();
 }
 
 function addTag(document, tagMap) {
@@ -1711,7 +2200,7 @@ function addTag(document, tagMap) {
   });
 }
 
-function getTagLinkHtml(urlValue, text, suffix, color01, tag) {
+function setTagColor(tag, color01) {
   var a = [0.5, 0.5, 0.5];
   var b = [0.5, 0.2, 0.3];
   var c = [1.0, 1.0, 1.0];
@@ -1724,6 +2213,10 @@ function getTagLinkHtml(urlValue, text, suffix, color01, tag) {
   else
     tagColorMap.set(tag, { color: bgColor });
 
+  return bgColor;
+}
+
+function getTagLinkHtml(urlValue, text, suffix, bgColor) {
   return '<a href="' + urlValue + '" class="tagLink" style="background-color: rgb(' + bgColor + ');" onclick="return resultOnClick(this)">' + text + '<span class="tagCounter">' + suffix + '</span></a>';
 }
 
@@ -1750,6 +2243,8 @@ function updateSearchPills(shouldRecordHistory) {
 
     doc.insertAdjacentHTML('beforeend', getSearchPillHtml(x, bgColor));
   });
+
+  refreshClearSearchButton();
 
   if (shouldRecordHistory)
     setURLParams({ tags: globalTags }, { push: true });
