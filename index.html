@@ -817,11 +817,11 @@ var searchInputIsComposing = false;
 var searchBuildIndicatorTimer = null;
 var searchBuildStatusTimer = null;
 var searchBuildOperation = 0;
+var searchCachePersistIdleHandle = null;
+var searchCachePersistTimeoutHandle = null;
 var resultRenderGeneration = 0;
 var resultRenderIdleHandle = null;
 var resultRenderTimeoutHandle = null;
-var tagRenderIdleHandle = null;
-var tagRenderTimeoutHandle = null;
 var tagPanelResizeTimer = null;
 var tagScrollDrag = null;
 var tagScrollFrame = null;
@@ -998,10 +998,7 @@ async function initializeMiniSearch(documents, sourceText) {
 
   if (cachedSource === sourceFingerprint && cachedIndex) {
     try {
-      // A healthy cache is the startup fast path. Deserialize it synchronously so
-      // activation can finish in the current browser turn, before the first paint.
-      // Fresh and changed content still use addAllAsync below.
-      var loadedIndex = MiniSearch.loadJSON(cachedIndex, options);
+      var loadedIndex = await MiniSearch.loadJSONAsync(cachedIndex, options);
       if (loadedIndex.documentCount === documents.length) {
         return {
           index: loadedIndex,
@@ -1040,16 +1037,13 @@ function parseSearchDocuments(sourceText) {
   return documents;
 }
 
-async function createSearchState(sourceText) {
-  var documents = parseSearchDocuments(sourceText);
-  var initialized = await initializeMiniSearch(documents, sourceText);
-
+function createSearchState(sourceText) {
   return {
     sourceText: sourceText,
-    fingerprint: initialized.fingerprint,
-    documents: documents,
-    index: initialized.index,
-    serializedIndex: initialized.serializedIndex
+    fingerprint: null,
+    documents: parseSearchDocuments(sourceText),
+    index: null,
+    serializedIndex: null
   };
 }
 
@@ -1064,38 +1058,99 @@ function persistSearchState(state) {
   }
 }
 
-function activateSearchState(state) {
+function cancelScheduledSearchStatePersistence() {
+  if (searchCachePersistIdleHandle !== null && typeof cancelIdleCallback === 'function')
+    cancelIdleCallback(searchCachePersistIdleHandle);
+
+  clearTimeout(searchCachePersistTimeoutHandle);
+  searchCachePersistIdleHandle = null;
+  searchCachePersistTimeoutHandle = null;
+}
+
+function scheduleSearchStatePersistence(state) {
+  cancelScheduledSearchStatePersistence();
+
+  var persist = function() {
+    searchCachePersistIdleHandle = null;
+    searchCachePersistTimeoutHandle = null;
+
+    if (activeSearch === state && state.index)
+      persistSearchState(state);
+  };
+
+  if (typeof requestIdleCallback === 'function') {
+    searchCachePersistIdleHandle = requestIdleCallback(persist, { timeout: 1500 });
+  } else {
+    searchCachePersistTimeoutHandle = setTimeout(persist, 0);
+  }
+}
+
+function yieldForInitialSearchRender() {
+  return new Promise(function(resolve) {
+    if (document.visibilityState === 'hidden' || typeof requestAnimationFrame !== 'function') {
+      setTimeout(resolve, 0);
+      return;
+    }
+
+    requestAnimationFrame(function() {
+      setTimeout(resolve, 0);
+    });
+  });
+}
+
+function activateSearchDocuments(state) {
+  cancelScheduledSearchStatePersistence();
   activeSearch = state;
   storedText = state.sourceText;
   searchDocuments = state.documents;
-  miniSearch = state.index;
+  miniSearch = null;
   allTags.clear();
   tagColorMap.clear();
   globalCategoryMap.clear();
   document.getElementById('indexMeta').innerHTML = ' &middot; <a class="footerLink" href="searchdb.txt">index(' + searchDocuments.length + ')</a>';
-  showAllTags(false);
 
-  updateResults(false);
+  updateResults(false, false, true);
+}
+
+function activateSearchIndex(state, initialized) {
+  if (activeSearch !== state)
+    return false;
+
+  state.fingerprint = initialized.fingerprint;
+  state.index = initialized.index;
+  state.serializedIndex = initialized.serializedIndex;
+  miniSearch = state.index;
+
+  if (document.getElementById('searchInput').value.trim() || globalTags.length > 0)
+    updateResults(false);
+
+  scheduleSearchStatePersistence(state);
+  return true;
 }
 
 async function buildAndActivateSearch(sourceText, message, existingOperation) {
   var operation = existingOperation || beginSearchBuild(message);
   var hadActiveSearch = activeSearch !== null;
+  var state;
 
   if (existingOperation)
     updateSearchBuildMessage(operation, message);
 
   try {
-    var state = await createSearchState(sourceText);
-    persistSearchState(state);
-    activateSearchState(state);
+    state = createSearchState(sourceText);
+    activateSearchDocuments(state);
+    await yieldForInitialSearchRender();
+    var initialized = await initializeMiniSearch(state.documents, state.sourceText);
+    if (!activateSearchIndex(state, initialized))
+      return false;
+
     finishSearchBuild(operation, hadActiveSearch ? 'Search updated.' : 'Search ready.');
     return true;
   } catch (error) {
     console.error('Unable to prepare search.', error);
     finishSearchBuild(
       operation,
-      hadActiveSearch ? 'Search update failed. Using cached results.' : 'Search is unavailable.'
+      hadActiveSearch ? 'Search update failed. Using unindexed results.' : 'Search index is unavailable.'
     );
     return false;
   }
@@ -1184,15 +1239,9 @@ function cancelProgressiveResultWork() {
   if (resultRenderIdleHandle !== null && typeof cancelIdleCallback === 'function')
     cancelIdleCallback(resultRenderIdleHandle);
 
-  if (tagRenderIdleHandle !== null && typeof cancelIdleCallback === 'function')
-    cancelIdleCallback(tagRenderIdleHandle);
-
   clearTimeout(resultRenderTimeoutHandle);
-  clearTimeout(tagRenderTimeoutHandle);
   resultRenderIdleHandle = null;
   resultRenderTimeoutHandle = null;
-  tagRenderIdleHandle = null;
-  tagRenderTimeoutHandle = null;
   return resultRenderGeneration;
 }
 
@@ -1744,22 +1793,6 @@ function scheduleNextResultBatch(generation) {
   }
 }
 
-function scheduleTagRender(generation) {
-  var renderTags = function() {
-    tagRenderIdleHandle = null;
-    tagRenderTimeoutHandle = null;
-
-    if (generation === resultRenderGeneration)
-      showAllTags();
-  };
-
-  if (typeof requestIdleCallback === 'function') {
-    tagRenderIdleHandle = requestIdleCallback(renderTags, { timeout: 100 });
-  } else {
-    tagRenderTimeoutHandle = setTimeout(renderTags, 0);
-  }
-}
-
 function ensureResultRendered(index) {
   if (index < renderedResultCount || index < 0 || index >= globalResults.length)
     return index >= 0 && index < renderedResultCount;
@@ -1775,9 +1808,11 @@ function ensureResultRendered(index) {
   return index < renderedResultCount;
 }
 
-function updateResults(shouldRecordHistory, updateFromSearchInput) {
+function updateResults(shouldRecordHistory, updateFromSearchInput, renderWithoutIndex) {
   if (updateFromSearchInput === undefined)
     updateFromSearchInput = false;
+  if (renderWithoutIndex === undefined)
+    renderWithoutIndex = false;
 
   cancelScheduledSearchInputUpdate();
   var renderGeneration = cancelProgressiveResultWork();
@@ -1827,6 +1862,26 @@ function updateResults(shouldRecordHistory, updateFromSearchInput) {
   var hasActiveQuery = searchSansTags.length > 0 || anyTags;
   var quotedPhrases = getQuotedSearchPhrases(searchSansTags);
   var scoredArr;
+
+  if (!miniSearch && renderWithoutIndex) {
+    anyTags = false;
+    forceNewest = true;
+    searchSansTags = '';
+    quotedPhrases = [];
+  } else if (!miniSearch && searchSansTags) {
+    ul.removeAttribute('aria-busy');
+    updateSearchPills(shouldRecordHistory);
+
+    if (updateFromSearchInput) {
+      clearTimeout(updateSearchTextHistoryTimer);
+      updateSearchTextHistoryTimer = setTimeout(function() {
+        setURLParams({ q: searchTextToDisplay }, { push: true });
+      }, 500);
+    }
+
+    document.getElementById('mainButton').classList.toggle('mainDropdownIdleAnim', hasActiveQuery);
+    return;
+  }
 
   if (!searchSansTags) {
     scoredArr = searchDocuments
@@ -1913,7 +1968,7 @@ function updateResults(shouldRecordHistory, updateFromSearchInput) {
 
   replaceRenderedResults(initialResultCount);
   restoreSelectedResult(previousSelectedUrl, previousSelectedIndex);
-  scheduleTagRender(renderGeneration);
+  showAllTags();
 
   if (renderedResultCount < globalResults.length)
     scheduleNextResultBatch(renderGeneration);
