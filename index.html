@@ -819,13 +819,16 @@ var searchBuildStatusTimer = null;
 var searchBuildOperation = 0;
 var searchCachePersistIdleHandle = null;
 var searchCachePersistTimeoutHandle = null;
-var resultRenderGeneration = 0;
-var resultRenderIdleHandle = null;
-var resultRenderTimeoutHandle = null;
+var progressiveRenderGeneration = 0;
+var progressiveRenderIdleHandle = null;
+var progressiveRenderTimeoutHandle = null;
+var progressiveRenderJobs = [];
 var tagPanelResizeTimer = null;
 var tagScrollDrag = null;
 var tagScrollFrame = null;
 var renderedResultCount = 0;
+var availableTags = [];
+var renderedTagCount = 0;
 var selectedResultIndex = -1;
 var selectedResultUrl = null;
 var shouldScrollSelectedResultOnInitialLoad = false;
@@ -833,6 +836,8 @@ var shouldScrollSelectedResultOnInitialLoad = false;
 const SEARCH_INPUT_DEBOUNCE_MS = 180;
 const INITIAL_RESULT_BATCH_SIZE = 40;
 const RESULT_BATCH_SIZE = 60;
+const INITIAL_TAG_BATCH_SIZE = 40;
+const TAG_BATCH_SIZE = 60;
 
 const SORTING_RELEVANCE = 0;
 const SORTING_NEWEST = 1;
@@ -1233,21 +1238,22 @@ function cancelScheduledSearchInputUpdate() {
   searchInputDebounceTimer = null;
 }
 
-function cancelProgressiveResultWork() {
-  resultRenderGeneration++;
+function cancelProgressiveRenderWork() {
+  progressiveRenderGeneration++;
 
-  if (resultRenderIdleHandle !== null && typeof cancelIdleCallback === 'function')
-    cancelIdleCallback(resultRenderIdleHandle);
+  if (progressiveRenderIdleHandle !== null && typeof cancelIdleCallback === 'function')
+    cancelIdleCallback(progressiveRenderIdleHandle);
 
-  clearTimeout(resultRenderTimeoutHandle);
-  resultRenderIdleHandle = null;
-  resultRenderTimeoutHandle = null;
-  return resultRenderGeneration;
+  clearTimeout(progressiveRenderTimeoutHandle);
+  progressiveRenderIdleHandle = null;
+  progressiveRenderTimeoutHandle = null;
+  progressiveRenderJobs.length = 0;
+  return progressiveRenderGeneration;
 }
 
 function scheduleSearchInputUpdate() {
   refreshClearSearchButton();
-  cancelProgressiveResultWork();
+  cancelProgressiveRenderWork();
   cancelScheduledSearchInputUpdate();
   document.getElementById('results').setAttribute('aria-busy', 'true');
 
@@ -1266,7 +1272,7 @@ function scheduleSearchInputUpdate() {
 function onSearchInputCompositionStart() {
   searchInputIsComposing = true;
   cancelScheduledSearchInputUpdate();
-  cancelProgressiveResultWork();
+  cancelProgressiveRenderWork();
 }
 
 function onSearchInputCompositionEnd() {
@@ -1383,6 +1389,12 @@ function setTagPanelExpanded(shouldExpand) {
   var panel = document.getElementById('tagPanel');
   var button = document.getElementById('tagMoreButton');
   var viewport = document.getElementById('tagListViewport');
+
+  if (shouldExpand && renderedTagCount < availableTags.length) {
+    appendRenderedTags(availableTags.length);
+    refreshTagMoreButton();
+  }
+
   var canExpand = !button.hidden && panel.classList.contains('hasMoreTags');
   var isExpanded = shouldExpand && canExpand;
 
@@ -1529,10 +1541,14 @@ function refreshTagMoreButton() {
     return;
   }
 
-  var pillHeight = parseFloat(
-    window.getComputedStyle(panel).getPropertyValue('--tag-pill-height')
-  ) || 29;
-  var needsMore = tagList.scrollHeight > pillHeight + 1;
+  var needsMore = renderedTagCount < availableTags.length;
+  if (!needsMore) {
+    var pillHeight = parseFloat(
+      window.getComputedStyle(panel).getPropertyValue('--tag-pill-height')
+    ) || 29;
+    needsMore = tagList.scrollHeight > pillHeight + 1;
+  }
+
   var shouldShowButton = needsMore || wasExpanded;
 
   panel.classList.toggle('hasMoreTags', shouldShowButton);
@@ -1728,15 +1744,21 @@ function openRandomResult() {
   return true;
 }
 
-function createResultFragment(startIndex, endIndex) {
+function createHtmlFragment(startIndex, endIndex, getHtml) {
   var html = '';
 
   for (var i = startIndex; i < endIndex; i++)
-    html += getResultString(globalResults[i].document, i);
+    html += getHtml(i);
 
   var template = document.createElement('template');
   template.innerHTML = html;
   return template.content;
+}
+
+function createResultFragment(startIndex, endIndex) {
+  return createHtmlFragment(startIndex, endIndex, function(index) {
+    return getResultString(globalResults[index].document, index);
+  });
 }
 
 function replaceRenderedResults(endIndex) {
@@ -1755,41 +1777,43 @@ function appendRenderedResults(endIndex) {
   renderedResultCount = endIndex;
 }
 
-function finishProgressiveResultRender(generation) {
-  if (generation !== resultRenderGeneration)
+function finishResultRender(generation) {
+  if (generation !== progressiveRenderGeneration)
     return;
 
-  resultRenderIdleHandle = null;
-  resultRenderTimeoutHandle = null;
   document.getElementById('results').removeAttribute('aria-busy');
 }
 
-function scheduleNextResultBatch(generation) {
-  if (generation !== resultRenderGeneration)
+function scheduleNextProgressiveBatch(generation) {
+  if (generation !== progressiveRenderGeneration || progressiveRenderJobs.length === 0)
     return;
-
-  if (renderedResultCount >= globalResults.length) {
-    finishProgressiveResultRender(generation);
-    return;
-  }
 
   var renderNext = function() {
-    resultRenderIdleHandle = null;
-    resultRenderTimeoutHandle = null;
+    progressiveRenderIdleHandle = null;
+    progressiveRenderTimeoutHandle = null;
 
-    if (generation !== resultRenderGeneration)
+    if (generation !== progressiveRenderGeneration)
       return;
 
-    appendRenderedResults(
-      Math.min(renderedResultCount + RESULT_BATCH_SIZE, globalResults.length)
-    );
-    scheduleNextResultBatch(generation);
+    var job = progressiveRenderJobs.shift();
+
+    if (!job.isDone())
+      job.renderNext();
+
+    if (job.isDone()) {
+      if (job.finish)
+        job.finish();
+    } else {
+      progressiveRenderJobs.push(job);
+    }
+
+    scheduleNextProgressiveBatch(generation);
   };
 
   if (typeof requestIdleCallback === 'function') {
-    resultRenderIdleHandle = requestIdleCallback(renderNext, { timeout: 100 });
+    progressiveRenderIdleHandle = requestIdleCallback(renderNext, { timeout: 100 });
   } else {
-    resultRenderTimeoutHandle = setTimeout(renderNext, 0);
+    progressiveRenderTimeoutHandle = setTimeout(renderNext, 0);
   }
 }
 
@@ -1803,7 +1827,7 @@ function ensureResultRendered(index) {
   ));
 
   if (renderedResultCount >= globalResults.length)
-    finishProgressiveResultRender(resultRenderGeneration);
+    finishResultRender(progressiveRenderGeneration);
 
   return index < renderedResultCount;
 }
@@ -1815,7 +1839,7 @@ function updateResults(shouldRecordHistory, updateFromSearchInput, renderWithout
     renderWithoutIndex = false;
 
   cancelScheduledSearchInputUpdate();
-  var renderGeneration = cancelProgressiveResultWork();
+  var renderGeneration = cancelProgressiveRenderWork();
 
   if (!activeSearch)
     return;
@@ -1968,12 +1992,43 @@ function updateResults(shouldRecordHistory, updateFromSearchInput, renderWithout
 
   replaceRenderedResults(initialResultCount);
   restoreSelectedResult(previousSelectedUrl, previousSelectedIndex);
-  showAllTags();
+  prepareTagRender();
 
-  if (renderedResultCount < globalResults.length)
-    scheduleNextResultBatch(renderGeneration);
-  else
-    finishProgressiveResultRender(renderGeneration);
+  if (renderedResultCount < globalResults.length) {
+    progressiveRenderJobs.push({
+      isDone: function() {
+        return renderedResultCount >= globalResults.length;
+      },
+      renderNext: function() {
+        appendRenderedResults(
+          Math.min(renderedResultCount + RESULT_BATCH_SIZE, globalResults.length)
+        );
+      },
+      finish: function() {
+        finishResultRender(renderGeneration);
+      }
+    });
+  } else {
+    finishResultRender(renderGeneration);
+  }
+
+  if (renderedTagCount < availableTags.length) {
+    progressiveRenderJobs.push({
+      isDone: function() {
+        return renderedTagCount >= availableTags.length;
+      },
+      renderNext: function() {
+        appendRenderedTags(
+          Math.min(renderedTagCount + TAG_BATCH_SIZE, availableTags.length)
+        );
+      },
+      finish: function() {
+        finishTagRender(renderGeneration);
+      }
+    });
+  }
+
+  scheduleNextProgressiveBatch(renderGeneration);
 
   updateSearchPills(shouldRecordHistory);
 
@@ -2206,10 +2261,7 @@ function stripParentheses(str, symbols) {
   return str;
 }
 
-function showAllTags(shouldRender) {
-  if (shouldRender === undefined)
-    shouldRender = true;
-
+function prepareAvailableTags() {
   if (allTags.size == 0) {
     searchDocuments.forEach(function(document) {
       addTag(document, allTags);
@@ -2233,31 +2285,54 @@ function showAllTags(shouldRender) {
     return y.count - x.count;
   });
 
-  var tagHtml = '';
-  var counter = 0;
-  sortedKeys.forEach(function(key) {
-    var color01 = counter / sortedKeys.length;
-    var bgColor = setTagColor(key.name, color01);
-
-    if (shouldRender) {
-      var localCount = globalCategoryMap.size > 0 ? globalCategoryMap.get(key.name).val : key.count;
-      tagHtml += getTagLinkHtml(key.name + ':', key.name, String(localCount), bgColor) + ' ';
-    }
-
-    counter++;
+  sortedKeys.forEach(function(tag, index) {
+    tag.color = setTagColor(tag.name, index / sortedKeys.length);
   });
 
-  if (!shouldRender)
+  return globalResults.length == 1 ? [] : sortedKeys;
+}
+
+function createTagFragment(startIndex, endIndex) {
+  return createHtmlFragment(startIndex, endIndex, function(index) {
+    var tag = availableTags[index];
+    return getTagLinkHtml(tag.name + ':', tag.name, String(tag.count), tag.color) + ' ';
+  });
+}
+
+function replaceRenderedTags(endIndex) {
+  document.getElementById('tagBox').replaceChildren(createTagFragment(0, endIndex));
+  renderedTagCount = endIndex;
+}
+
+function appendRenderedTags(endIndex) {
+  if (endIndex <= renderedTagCount)
     return;
 
-  var tagList = document.getElementById('tagBox');
+  document.getElementById('tagBox').appendChild(
+    createTagFragment(renderedTagCount, endIndex)
+  );
+  renderedTagCount = endIndex;
+}
 
-  while (tagList.firstChild) {
-    tagList.removeChild(tagList.firstChild);
-  }
+function prepareTagRender() {
+  var panel = document.getElementById('tagPanel');
+  var renderAllTags = panel.classList.contains('tagPanelExpanded');
+  availableTags = prepareAvailableTags();
+  replaceRenderedTags(
+    renderAllTags
+      ? availableTags.length
+      : Math.min(INITIAL_TAG_BATCH_SIZE, availableTags.length)
+  );
 
-  if (globalResults.length != 1 && sortedKeys.length > 0)
-    tagList.insertAdjacentHTML('beforeend', tagHtml);
+  if (availableTags.length === 0 && renderAllTags)
+    setTagPanelExpanded(false);
+
+  refreshTagMoreButton();
+}
+
+function finishTagRender(generation) {
+  if (generation !== progressiveRenderGeneration)
+    return;
 
   refreshTagMoreButton();
 }
