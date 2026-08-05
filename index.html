@@ -843,7 +843,7 @@ const SORTING_RELEVANCE = 0;
 const SORTING_NEWEST = 1;
 const SORTING_OLDEST = 2;
 
-var sortingMode = SORTING_RELEVANCE;
+var sortingMode = null;
 
 var URL = 0;
 var NAME = 1;
@@ -1369,11 +1369,19 @@ function initModalBar() {
   dropdownContent.addEventListener('click', function(e) {
     if (e.target.tagName === 'A') {
       e.preventDefault();
-      sortingMode = e.target.getAttribute('data-sort');
+      sortingMode = parseInt(e.target.getAttribute('data-sort'));
       dropbtn.textContent = 'Sort by: ' + e.target.textContent;
       updateResults(false);
     }
   });
+}
+
+function updateSortingLabel(mode) {
+  var labels = {};
+  labels[SORTING_RELEVANCE] = 'Relevance';
+  labels[SORTING_NEWEST] = 'Newest';
+  labels[SORTING_OLDEST] = 'Oldest';
+  document.querySelector('.dropbtn').textContent = 'Sort by: ' + labels[mode];
 }
 
 function showModalBar(show) {
@@ -1874,7 +1882,9 @@ function updateResults(shouldRecordHistory, updateFromSearchInput, renderWithout
   }
 
   var anyTags = globalTags.length > 0;
-  var forceNewest = rawInput.length == 0 && !anyTags;
+  var defaultSortingMode = rawInput.length == 0 && !anyTags
+    ? SORTING_NEWEST
+    : SORTING_RELEVANCE;
   var searchTextToDisplay = filterStrings.join(' ');
 
   if (rawInput.endsWith(' ') && searchTextToDisplay.length > 0)
@@ -1889,7 +1899,7 @@ function updateResults(shouldRecordHistory, updateFromSearchInput, renderWithout
 
   if (!miniSearch && renderWithoutIndex) {
     anyTags = false;
-    forceNewest = true;
+    defaultSortingMode = SORTING_NEWEST;
     searchSansTags = '';
     quotedPhrases = [];
   } else if (!miniSearch && searchSansTags) {
@@ -1956,7 +1966,8 @@ function updateResults(shouldRecordHistory, updateFromSearchInput, renderWithout
     });
   }
 
-  var mode = forceNewest ? SORTING_NEWEST : parseInt(sortingMode);
+  var mode = sortingMode === null ? defaultSortingMode : sortingMode;
+  updateSortingLabel(mode);
   if (mode === SORTING_RELEVANCE) {
     scoredArr.sort(function(x, y) { return y.score - x.score; });
   } else if (mode === SORTING_NEWEST) {
@@ -2040,7 +2051,7 @@ function updateResults(shouldRecordHistory, updateFromSearchInput, renderWithout
   }
 
   document.getElementById('mainButton').classList.toggle('mainDropdownIdleAnim', hasActiveQuery);
-  showModalBar(globalResults.length > 1 && !forceNewest);
+  showModalBar(globalResults.length > 1);
 
   if (!/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent))
     inputElement.focus();
