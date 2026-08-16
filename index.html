@@ -905,6 +905,10 @@ function processSearchTerm(term) {
   return Array.from(new Set(aliases));
 }
 
+function tokenizePhraseText(value) {
+  return normalizeSearchText(value).match(/\.[\p{L}\p{N}]+|[\p{L}\p{N}]+(?:\+\+|#)?/gu) || [];
+}
+
 function getMiniSearchOptions() {
   return {
     fields: MINI_SEARCH_FIELDS,
@@ -1172,15 +1176,19 @@ function parseSearchDocument(rawLine, id) {
   var categories = values[CATEGORY] || '';
   var keywords = values[KEYWORDS] || '';
 
+  var name = values[NAME] || '';
+  var description = values[DESCRIPTION] || '';
+
   return {
     id: id,
     raw: rawLine,
     url: values[URL] || '',
-    name: values[NAME] || '',
-    description: values[DESCRIPTION] || '',
+    name: name,
+    description: description,
     categories: categories,
     categoryList: categories.split(/\s+/).filter(Boolean),
     keywords: keywords,
+    phraseFields: [name, description, categories, keywords].map(tokenizePhraseText),
     timestamp: parseInt(values[TIMESTAMP]) || 0,
     archiveUrl: values[ARCHIVE_URL] || null
   };
@@ -1195,41 +1203,187 @@ function getFuzzyDistance(term) {
   return length < 6 ? 1 : 2;
 }
 
-function getQuotedSearchPhrases(searchText) {
+function parseSearchExpression(searchText) {
   var phrases = [];
-  var phraseExp = /"([^"]+)"/g;
+  var unquotedParts = [];
+  var phraseExp = /"([^"]*)"|\u201c([^\u201d]*)\u201d/g;
   var match;
+  var previousEnd = 0;
 
   while ((match = phraseExp.exec(searchText)) !== null) {
-    var phrase = normalizeSearchText(match[1]).trim();
-    if (phrase)
-      phrases.push(phrase);
+    unquotedParts.push(searchText.slice(previousEnd, match.index));
+    var phraseText = (match[1] !== undefined ? match[1] : match[2]).trim();
+    var phraseTokens = tokenizePhraseText(phraseText);
+
+    if (phraseTokens.length > 0) {
+      phrases.push({
+        text: phraseText,
+        tokens: phraseTokens
+      });
+    }
+
+    previousEnd = phraseExp.lastIndex;
   }
 
-  return phrases;
+  unquotedParts.push(searchText.slice(previousEnd));
+  var unquotedText = unquotedParts.join(' ').replace(/\s+/g, ' ').trim();
+
+  return {
+    unquotedText: unquotedText,
+    unquotedTokens: tokenizePhraseText(unquotedText),
+    phrases: phrases
+  };
 }
 
-function documentMatchesPhrases(document, phrases) {
-  if (phrases.length == 0)
-    return true;
+function splitSearchInputParts(searchText) {
+  return searchText.match(/"[^"]*"|\u201c[^\u201d]*\u201d|\S+/g) || [];
+}
 
-  var normalizedFields = [
-    document.name,
-    document.description,
-    document.categories,
-    document.keywords
-  ].map(normalizeSearchText);
+function fieldContainsPhrase(fieldTokens, phraseTokens) {
+  if (phraseTokens.length == 0 || phraseTokens.length > fieldTokens.length)
+    return false;
 
-  return phrases.every(function(phrase) {
-    return normalizedFields.some(function(field) {
-      return field.includes(phrase);
-    });
+  for (var start = 0; start <= fieldTokens.length - phraseTokens.length; start++) {
+    var matches = true;
+
+    for (var offset = 0; offset < phraseTokens.length; offset++) {
+      if (fieldTokens[start + offset] !== phraseTokens[offset]) {
+        matches = false;
+        break;
+      }
+    }
+
+    if (matches)
+      return true;
+  }
+
+  return false;
+}
+
+function documentMatchesPhrase(document, phraseTokens) {
+  return document.phraseFields.some(function(fieldTokens) {
+    return fieldContainsPhrase(fieldTokens, phraseTokens);
   });
+}
+
+function getLongestConsecutiveMatch(queryTokens, fieldTokens) {
+  if (queryTokens.length < 2 || fieldTokens.length < 2)
+    return 0;
+
+  var previousRow = new Array(fieldTokens.length + 1).fill(0);
+  var longest = 0;
+
+  for (var queryIndex = 1; queryIndex <= queryTokens.length; queryIndex++) {
+    var currentRow = new Array(fieldTokens.length + 1).fill(0);
+
+    for (var fieldIndex = 1; fieldIndex <= fieldTokens.length; fieldIndex++) {
+      if (queryTokens[queryIndex - 1] !== fieldTokens[fieldIndex - 1])
+        continue;
+
+      currentRow[fieldIndex] = previousRow[fieldIndex - 1] + 1;
+      longest = Math.max(longest, currentRow[fieldIndex]);
+    }
+
+    previousRow = currentRow;
+  }
+
+  return longest;
+}
+
+function getImplicitPhraseMultiplier(document, queryTokens) {
+  if (queryTokens.length < 2)
+    return 1;
+
+  var fieldWeights = [1, 0.8, 0.65, 0.45];
+  var strongestMatch = 0;
+
+  document.phraseFields.forEach(function(fieldTokens, index) {
+    var matchLength = getLongestConsecutiveMatch(queryTokens, fieldTokens);
+    if (matchLength < 2)
+      return;
+
+    var strength = Math.min(2.5, matchLength - 1) * fieldWeights[index];
+    strongestMatch = Math.max(strongestMatch, strength);
+  });
+
+  return 1 + strongestMatch * 0.9;
 }
 
 function documentHasTags(document, tags) {
   return tags.every(function(tag) {
     return document.categoryList.includes(tag);
+  });
+}
+
+function searchWithExpression(searchExpression, tags) {
+  var searchOptions = {
+    boost: {
+      name: 8,
+      description: 4,
+      categories: 3,
+      keywords: 1
+    },
+    prefix: function(term) {
+      return Array.from(term).length >= 2;
+    },
+    fuzzy: function(term) {
+      return getFuzzyDistance(term);
+    },
+    weights: {
+      fuzzy: 0.65,
+      prefix: 0.85
+    },
+    combineWith: 'OR',
+    filter: function(result) {
+      var document = searchDocuments[result.id];
+      return document && (tags.length == 0 || documentHasTags(document, tags));
+    }
+  };
+  var mergedResults = new Map();
+
+  function mergeClauseResults(results, phrase) {
+    results.forEach(function(result) {
+      var document = searchDocuments[result.id];
+      if (!document || (phrase && !documentMatchesPhrase(document, phrase.tokens)))
+        return;
+
+      var score = result.score;
+      if (phrase)
+        score *= 1.8 + Math.min(1.2, phrase.tokens.length * 0.3);
+
+      var existingResult = mergedResults.get(result.id);
+      if (existingResult) {
+        existingResult.score += score;
+        return;
+      }
+
+      mergedResults.set(result.id, {
+        document: document,
+        score: score,
+        timestamp: document.timestamp,
+        match: result.match,
+        terms: result.terms
+      });
+    });
+  }
+
+  if (searchExpression.unquotedText) {
+    mergeClauseResults(
+      miniSearch.search(searchExpression.unquotedText, searchOptions),
+      null
+    );
+  }
+
+  searchExpression.phrases.forEach(function(phrase) {
+    mergeClauseResults(miniSearch.search(phrase.text, searchOptions), phrase);
+  });
+
+  return Array.from(mergedResults.values()).map(function(result) {
+    result.score *= getImplicitPhraseMultiplier(
+      result.document,
+      searchExpression.unquotedTokens
+    );
+    return result;
   });
 }
 
@@ -1866,18 +2020,22 @@ function updateResults(shouldRecordHistory, updateFromSearchInput, renderWithout
   var inputElement = document.getElementById('searchInput');
   var rawInput = inputElement.value;
   var inputStr = rawInput.trim();
-  var filterStrings = inputStr.split(' ');
+  var filterStrings = splitSearchInputParts(inputStr);
 
   for (var i = 0; i < filterStrings.length; i++) {
     var next = filterStrings[i];
+    var isQuoted = (
+      (next.startsWith('"') && next.endsWith('"')) ||
+      (next.startsWith('\u201c') && next.endsWith('\u201d'))
+    );
 
-    if (!next || next[next.length - 1] != ':')
+    if (!next || isQuoted || next[next.length - 1] != ':')
       continue;
 
     filterStrings.splice(i, 1);
     i--;
 
-    globalTags.push(next.replace(':', '').toLowerCase());
+    globalTags.push(next.slice(0, -1).toLowerCase());
     shouldRecordHistory = true;
   }
 
@@ -1894,14 +2052,14 @@ function updateResults(shouldRecordHistory, updateFromSearchInput, renderWithout
 
   var searchSansTags = filterStrings.join(' ').trim();
   var hasActiveQuery = searchSansTags.length > 0 || anyTags;
-  var quotedPhrases = getQuotedSearchPhrases(searchSansTags);
+  var searchExpression = parseSearchExpression(searchSansTags);
   var scoredArr;
 
   if (!miniSearch && renderWithoutIndex) {
     anyTags = false;
     defaultSortingMode = SORTING_NEWEST;
     searchSansTags = '';
-    quotedPhrases = [];
+    searchExpression = parseSearchExpression('');
   } else if (!miniSearch && searchSansTags) {
     ul.removeAttribute('aria-busy');
     updateSearchPills(shouldRecordHistory);
@@ -1930,40 +2088,7 @@ function updateResults(shouldRecordHistory, updateFromSearchInput, renderWithout
         };
       });
   } else {
-    scoredArr = miniSearch.search(searchSansTags, {
-      boost: {
-        name: 8,
-        description: 4,
-        categories: 3,
-        keywords: 1
-      },
-      prefix: function(term) {
-        return Array.from(term).length >= 2;
-      },
-      fuzzy: function(term) {
-        return getFuzzyDistance(term);
-      },
-      weights: {
-        fuzzy: 0.65,
-        prefix: 0.85
-      },
-      combineWith: 'OR',
-      filter: function(result) {
-        var document = searchDocuments[result.id];
-        return document &&
-          (!anyTags || documentHasTags(document, globalTags)) &&
-          documentMatchesPhrases(document, quotedPhrases);
-      }
-    }).map(function(result) {
-      var document = searchDocuments[result.id];
-      return {
-        document: document,
-        score: result.score,
-        timestamp: document.timestamp,
-        match: result.match,
-        terms: result.terms
-      };
-    });
+    scoredArr = searchWithExpression(searchExpression, globalTags);
   }
 
   var mode = sortingMode === null ? defaultSortingMode : sortingMode;
